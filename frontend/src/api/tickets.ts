@@ -1,0 +1,52 @@
+import { apiFetch } from './client'
+import type { Ticket, TicketStatus, TicketType } from '@/types/ticket'
+import type { PaginatedResponse } from '@/types/api'
+
+export interface TicketFilters {
+  page?: number
+  pageSize?: number
+  status?: TicketStatus
+  type?: TicketType
+  authorId?: string
+  serverId?: string
+  labelId?: string
+  search?: string
+}
+
+export function apiGetTickets(filters: TicketFilters = {}) {
+  const params = new URLSearchParams()
+  Object.entries(filters).forEach(([key, val]) => {
+    if (val !== undefined && val !== '') params.set(key, String(val))
+  })
+  const qs = params.toString()
+  return apiFetch<PaginatedResponse<Ticket>>(`/tickets${qs ? '?' + qs : ''}`)
+}
+
+export function apiGetTicket(id: string) {
+  return apiFetch<Ticket>(`/tickets/${id}`)
+}
+
+export function apiCreateTicket(data: { title: string; body: string; type: TicketType; priority?: string; serverId?: string }) {
+  return apiFetch<Ticket>('/tickets', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  })
+}
+
+export function apiUpdateTicket(id: string, data: { status?: TicketStatus; priority?: string; assigneeId?: string }) {
+  return apiFetch<Ticket>(`/tickets/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  })
+}
+
+export function apiApproveTicket(id: string) {
+  return apiFetch<Ticket>(`/tickets/${id}/approve`, { method: 'POST' })
+}
+
+export function apiRejectTicket(id: string, reason?: string) {
+  return apiFetch<Ticket>(`/tickets/${id}/reject`, {
+    method: 'POST',
+    body: JSON.stringify({ reason }),
+  })
+}
