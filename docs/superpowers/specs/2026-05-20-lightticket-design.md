@@ -169,8 +169,8 @@ LightTicket 是一个与 Minecraft 服务器深度集成的工单管理平台，
 
 ### UI 风格
 - 参考 craft233.top 的设计语言：毛玻璃效果、Inter 字体、圆角、slate 灰色层次、dark mode
-- 强调色可配置（管理后台设置），默认使用中性色调（slate/blue），不默认绿色
-- TailwindCSS 4（CSS-first 配置，CSS 变量驱动主题色）
+- 不使用自建颜色管理系统，直接使用 TailwindCSS 原生色板（black/slate/white），通过 `dark:` 变体适配深色模式
+- TailwindCSS 4（CSS-first 配置）
 - 响应式设计，支持移动端
 - @iconify/vue 图标库
 
