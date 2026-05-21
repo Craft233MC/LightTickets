@@ -4,6 +4,7 @@ import cors from 'cors';
 import fs from 'fs';
 import { AppError } from './utils/errors.js';
 import { config } from './config.js';
+import setupRoutes from './routes/setup.js';
 import authRoutes from './routes/auth.js';
 import ticketRoutes from './routes/tickets.js';
 import commentRoutes from './routes/comments.js';
@@ -27,6 +28,7 @@ export function createApp() {
     res.json({ status: 'ok' });
   });
 
+  app.use('/api/setup', setupRoutes);
   app.use('/api/auth', authRoutes);
   app.use('/api/tickets', ticketRoutes);
   app.use('/api/tickets/:id/comments', commentRoutes);

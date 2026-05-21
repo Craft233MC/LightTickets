@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { config } from '../config.js';
 import { AppError, UnauthorizedError, ValidationError } from '../utils/errors.js';
+import { generateTokens } from '../utils/token.js';
 
 const prisma = new PrismaClient();
 
@@ -64,12 +65,6 @@ export async function linkMinecraft(userId: string, code: string) {
 
   await prisma.linkCode.update({ where: { id: linkCode.id }, data: { used: true } });
   return { uuid: linkCode.minecraftUuid, name: linkCode.minecraftName };
-}
-
-function generateTokens(userId: string, role: string) {
-  const accessToken = jwt.sign({ userId, role }, config.jwtSecret, { expiresIn: config.accessTokenExpiry });
-  const refreshToken = jwt.sign({ userId, role }, config.jwtRefreshSecret, { expiresIn: config.refreshTokenExpiry });
-  return { accessToken, refreshToken };
 }
 
 function sanitizeUser(user: any) {

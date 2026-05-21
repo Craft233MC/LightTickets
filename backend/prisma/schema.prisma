@@ -187,6 +187,18 @@ model LinkCode {
   @@map("link_codes")
 }
 
+model SetupStatus {
+  id          String   @id @default(cuid())
+  isSetup     Boolean  @default(false) @map("is_setup")
+  siteName    String   @default("LightTicket") @map("site_name")
+  siteUrl     String?  @map("site_url")
+  accentColor String   @default("#111111") @map("accent_color")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("setup_status")
+}
+
 model AuditLog {
   id        String   @id @default(cuid())
   ticketId  String   @map("ticket_id")
