@@ -39,6 +39,12 @@ export async function getSetupStatus() {
 }
 
 export async function completeSetup(input: SetupInput) {
+  // Guard: already set up
+  const existingSetup = await prisma.setupStatus.findFirst();
+  if (existingSetup) {
+    throw new AppError(409, 'Setup has already been completed');
+  }
+
   // 1. Validate DB config
   if (!input.db.provider || !['sqlite', 'mysql'].includes(input.db.provider)) {
     throw new ValidationError('Invalid database provider. Must be sqlite or mysql.');
