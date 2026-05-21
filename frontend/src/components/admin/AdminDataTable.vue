@@ -69,7 +69,7 @@ const emit = defineEmits<{
                 :key="idx"
                 @click.stop="action.onClick(row)"
                 class="p-1.5 rounded text-slate-400 transition-colors"
-                :class="action.variant === 'danger' ? 'hover:text-red-500' : 'hover:text-accent-500'"
+                :class="action.variant === 'danger' ? 'hover:text-red-500' : 'hover:text-slate-700 dark:hover:text-slate-200'"
                 :title="action.label"
               >
                 <slot :name="`action-${idx}`" :row="row">

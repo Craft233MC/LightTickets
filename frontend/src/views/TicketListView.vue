@@ -9,6 +9,7 @@ import { usePagination } from '@/composables/usePagination'
 import { timeAgo } from '@/utils/date'
 import BasePagination from '@/components/base/BasePagination.vue'
 import BaseBadge from '@/components/base/BaseBadge.vue'
+import BaseButton from '@/components/base/BaseButton.vue'
 import type { TicketStatus } from '@/types/ticket'
 
 const router = useRouter()
@@ -76,13 +77,7 @@ watch(() => store.filters.search, () => {
   <div class="space-y-4">
     <div class="flex items-center justify-between">
       <h1 class="text-xl font-bold text-slate-900 dark:text-white">工单</h1>
-      <RouterLink
-        to="/tickets/new"
-        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg bg-accent-500 text-white hover:bg-accent-600 transition-colors"
-      >
-        <Icon icon="lucide:plus" class="w-4 h-4" />
-        新建
-      </RouterLink>
+      <BaseButton as="router-link" to="/tickets/new" size="sm" icon="lucide:plus">新建</BaseButton>
     </div>
 
     <!-- Status tabs -->
@@ -93,7 +88,7 @@ watch(() => store.filters.search, () => {
         @click="setStatus(tab.key)"
         class="flex items-center gap-1.5 px-3 py-2 text-sm font-medium border-b-2 -mb-px transition-colors"
         :class="(store.filters.status || 'open') === tab.key || (tab.key === 'all' && !store.filters.status && store.filters.status !== 'open')
-          ? 'border-accent-500 text-accent-600 dark:text-accent-400'
+          ? 'border-slate-900 text-slate-800 dark:border-slate-100 dark:text-slate-200'
           : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'"
       >
         <Icon :icon="tab.icon" class="w-4 h-4" />
@@ -108,7 +103,7 @@ watch(() => store.filters.search, () => {
         v-model="store.filters.search"
         type="text"
         placeholder="搜索工单..."
-        class="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-accent-500/40 focus:border-accent-500 transition-colors"
+        class="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900/40 focus:border-slate-900 dark:focus:ring-slate-100/40 dark:focus:border-slate-100 transition-colors"
       />
     </div>
 

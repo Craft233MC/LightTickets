@@ -18,7 +18,7 @@ defineProps<{
       :type="type || 'text'"
       :placeholder="placeholder"
       :disabled="disabled"
-      class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-accent-500/40 focus:border-accent-500 disabled:opacity-50 transition-colors"
+      class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-900/40 focus:border-slate-900 dark:focus:ring-slate-100/40 dark:focus:border-slate-100 disabled:opacity-50 transition-colors"
       :class="{ 'border-red-400 dark:border-red-500 focus:ring-red-500/40 focus:border-red-500': error }"
     />
     <p v-if="error" class="text-xs text-red-500">{{ error }}</p>

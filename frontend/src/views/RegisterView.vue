@@ -58,7 +58,7 @@ async function submit() {
 
       <p class="text-center text-sm text-slate-500 dark:text-slate-400">
         已有账号？
-        <RouterLink to="/login" class="text-accent-500 hover:text-accent-600 font-medium">登录</RouterLink>
+        <RouterLink to="/login" class="text-slate-900 hover:text-slate-700 dark:text-slate-100 dark:hover:text-slate-300 font-medium">登录</RouterLink>
       </p>
     </div>
   </div>

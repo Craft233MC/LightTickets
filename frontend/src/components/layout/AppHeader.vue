@@ -3,6 +3,7 @@ import { Icon } from '@iconify/vue'
 import { RouterLink } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useUiStore } from '@/stores/ui'
+import BaseButton from '@/components/base/BaseButton.vue'
 
 const auth = useAuthStore()
 const ui = useUiStore()
@@ -31,17 +32,11 @@ const ui = useUiStore()
         </button>
 
         <template v-if="auth.isAuthenticated">
-          <RouterLink
-            to="/tickets/new"
-            class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg bg-accent-500 text-white hover:bg-accent-600 transition-colors"
-          >
-            <Icon icon="lucide:plus" class="w-4 h-4" />
-            新建工单
-          </RouterLink>
+          <BaseButton as="router-link" to="/tickets/new" size="sm" icon="lucide:plus" class="hidden sm:inline-flex">新建工单</BaseButton>
 
           <div class="relative group">
             <button class="flex items-center gap-2 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-              <div class="w-7 h-7 rounded-full bg-accent-100 dark:bg-accent-900 flex items-center justify-center text-xs font-medium text-accent-700 dark:text-accent-300">
+              <div class="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-xs font-medium text-slate-700 dark:text-slate-300">
                 {{ auth.user?.username?.charAt(0).toUpperCase() }}
               </div>
             </button>

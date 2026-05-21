@@ -75,9 +75,9 @@ async function submit() {
         v-for="t in types"
         :key="t.key"
         @click="selectedType = t.key"
-        class="flex items-start gap-3 p-4 rounded-lg border border-slate-200 dark:border-slate-700 hover:border-accent-300 dark:hover:border-accent-700 hover:bg-accent-50/50 dark:hover:bg-accent-950/30 transition-colors text-left"
+        class="flex items-start gap-3 p-4 rounded-lg border border-slate-200 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors text-left"
       >
-        <Icon :icon="t.icon" class="w-5 h-5 text-accent-500 mt-0.5" />
+        <Icon :icon="t.icon" class="w-5 h-5 text-slate-600 dark:text-slate-400 mt-0.5" />
         <div>
           <div class="font-medium text-slate-900 dark:text-white text-sm">{{ t.label }}</div>
           <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{{ t.desc }}</div>
