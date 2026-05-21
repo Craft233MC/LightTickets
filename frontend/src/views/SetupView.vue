@@ -133,7 +133,14 @@ async function submit() {
             v-model="payload.db.databaseUrl"
             :placeholder="payload.db.provider === 'sqlite' ? 'file:./dev.db' : 'mysql://user:pass@localhost:3306/db'"
           />
-          <p class="text-xs text-slate-400 mt-1">SQLite 建议使用相对路径，如 <code>file:./dev.db</code>。</p>
+          <p class="text-xs text-slate-400 mt-1">
+            <template v-if="payload.db.provider === 'sqlite'">
+              建议使用相对路径，如 <code>file:./dev.db</code>。
+            </template>
+            <template v-else>
+              MySQL 连接字符串，如 <code>mysql://root:password@localhost:3306/lightticket</code>。
+            </template>
+          </p>
         </div>
       </div>
 
