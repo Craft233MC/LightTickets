@@ -1,4 +1,4 @@
-import { apiClient } from './client';
+import { apiFetch } from './client';
 
 export interface SetupStatus {
   isSetup: boolean;
@@ -47,11 +47,12 @@ export interface SetupResult {
 }
 
 export async function getSetupStatus(): Promise<SetupStatus> {
-  const { data } = await apiClient.get<SetupStatus>('/setup/status');
-  return data;
+  return apiFetch<SetupStatus>('/setup/status', { method: 'GET' });
 }
 
 export async function completeSetup(payload: SetupPayload): Promise<SetupResult> {
-  const { data } = await apiClient.post<SetupResult>('/setup', payload);
-  return data;
+  return apiFetch<SetupResult>('/setup', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
 }
