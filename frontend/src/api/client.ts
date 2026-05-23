@@ -60,7 +60,8 @@ export async function apiFetch<T>(path: string, options: RequestInit = {}): Prom
       headers['Authorization'] = `Bearer ${newToken}`
       res = await fetch(`${BASE_URL}${path}`, { ...options, headers })
     } else {
-      window.location.href = '/login'
+      accessToken = null
+      localStorage.removeItem('lt-refresh-token')
       throw new Error('Session expired')
     }
   }

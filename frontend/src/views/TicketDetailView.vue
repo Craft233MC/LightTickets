@@ -133,7 +133,7 @@ usePolling(async () => {
         </div>
 
         <!-- Comment form -->
-        <form @submit.prevent="submitComment" class="space-y-3">
+        <form v-if="auth.isAuthenticated" @submit.prevent="submitComment" class="space-y-3">
           <BaseTextarea v-model="newComment" placeholder="添加评论... (支持 Markdown)" :rows="3" />
           <div class="flex justify-end">
             <BaseButton type="submit" size="sm" :loading="submitting" :disabled="!newComment.trim()">发送</BaseButton>

@@ -1,6 +1,8 @@
 import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import * as setupService from '../services/setup.service.js';
+import { authMiddleware } from '../middleware/auth.js';
+import { requireRole } from '../middleware/role.js';
 import { ValidationError } from '../utils/errors.js';
 
 const router = Router();
@@ -24,10 +26,10 @@ const setupSchema = z.object({
   }).optional(),
 });
 
-// GET /api/setup/status - check if setup is complete
-router.get('/status', async (_req: Request, res: Response) => {
-  const status = await setupService.getSetupStatus();
-  res.json(status);
+// GET /api/setup/site-config - public, no auth required
+router.get('/site-config', async (_req: Request, res: Response) => {
+  const config = await setupService.getSiteConfig();
+  res.json(config);
 });
 
 // POST /api/setup - perform initial setup
@@ -37,6 +39,18 @@ router.post('/', async (req: Request, res: Response) => {
 
   const result = await setupService.completeSetup(parsed.data);
   res.status(201).json(result);
+});
+
+// PATCH /api/setup/settings - admin only
+router.patch('/settings', authMiddleware, requireRole('admin'), async (req: Request, res: Response) => {
+  const schema = z.object({
+    requireLogin: z.boolean().optional(),
+  });
+  const parsed = schema.safeParse(req.body);
+  if (!parsed.success) throw new ValidationError(parsed.error.issues[0].message);
+
+  const result = await setupService.updateSettings(parsed.data);
+  res.json(result);
 });
 
 export default router;

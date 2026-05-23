@@ -5,13 +5,19 @@ import { generateTokens } from '../utils/token.js';
 
 const prisma = new PrismaClient();
 
+export interface SiteConfig {
+  isSetup: boolean;
+  requireLogin: boolean;
+  siteName: string;
+}
+
 export interface DbConfig {
   provider: 'sqlite' | 'mysql';
   databaseUrl: string;
 }
 
-export interface SiteConfig {
-  siteName: string;
+export interface SiteConfigInput {
+  siteName?: string;
   siteUrl?: string;
 }
 
@@ -22,9 +28,45 @@ export interface SetupInput {
     password: string;
     username: string;
   };
-  site?: SiteConfig;
+  site?: SiteConfigInput;
   mc?: {
     defaultServerName?: string;
+  };
+}
+
+let cachedSiteConfig: SiteConfig | null = null;
+
+export function invalidateSiteCache() {
+  cachedSiteConfig = null;
+}
+
+export async function getSiteConfig(): Promise<SiteConfig> {
+  if (cachedSiteConfig) return cachedSiteConfig;
+  const status = await prisma.setupStatus.findFirst();
+  cachedSiteConfig = {
+    isSetup: status?.isSetup ?? false,
+    requireLogin: status?.requireLogin ?? false,
+    siteName: status?.siteName ?? 'LightTicket',
+  };
+  return cachedSiteConfig;
+}
+
+export async function updateSettings(data: { requireLogin?: boolean }) {
+  const status = await prisma.setupStatus.findFirst();
+  if (!status) throw new AppError(404, '站点尚未初始化');
+
+  const updated = await prisma.setupStatus.update({
+    where: { id: status.id },
+    data: {
+      ...(data.requireLogin !== undefined && { requireLogin: data.requireLogin }),
+    },
+  });
+
+  invalidateSiteCache();
+
+  return {
+    requireLogin: updated.requireLogin,
+    siteName: updated.siteName,
   };
 }
 
@@ -99,6 +141,7 @@ export async function completeSetup(input: SetupInput) {
     });
   }
 
+  invalidateSiteCache();
   const tokens = generateTokens(admin.id, admin.role);
   return {
     setup: setupRecord,

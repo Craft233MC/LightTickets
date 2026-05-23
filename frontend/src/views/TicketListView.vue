@@ -3,6 +3,7 @@ import { onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { Icon } from '@iconify/vue'
 import { useTicketsStore } from '@/stores/tickets'
+import { useAuthStore } from '@/stores/auth'
 import { useLabelsStore } from '@/stores/labels'
 import { usePolling } from '@/composables/usePolling'
 import { usePagination } from '@/composables/usePagination'
@@ -16,6 +17,7 @@ const router = useRouter()
 const route = useRoute()
 const store = useTicketsStore()
 const labels = useLabelsStore()
+const auth = useAuthStore()
 
 const statusTabs: { key: TicketStatus | 'all'; label: string; icon: string }[] = [
   { key: 'open', label: '开放', icon: 'lucide:circle-dot' },
@@ -77,7 +79,8 @@ watch(() => store.filters.search, () => {
   <div class="space-y-4">
     <div class="flex items-center justify-between">
       <h1 class="text-xl font-bold text-slate-900 dark:text-white">工单</h1>
-      <BaseButton as="router-link" to="/tickets/new" size="sm" icon="lucide:plus">新建</BaseButton>
+      <BaseButton v-if="auth.isAuthenticated" as="router-link" to="/tickets/new" size="sm" icon="lucide:plus">新建</BaseButton>
+      <RouterLink v-else to="/login" class="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">登录以创建工单</RouterLink>
     </div>
 
     <!-- Status tabs -->

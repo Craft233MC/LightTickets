@@ -2,12 +2,15 @@
 import { ref, computed, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import { completeSetup, type SetupPayload } from '@/api/setup'
+import { useUiStore } from '@/stores/ui'
+import { Icon } from '@iconify/vue'
+import { completeSetup, setSiteConfigCache, type SetupPayload } from '@/api/setup'
 import BaseButton from '@/components/base/BaseButton.vue'
 import BaseInput from '@/components/base/BaseInput.vue'
 
 const router = useRouter()
 const auth = useAuthStore()
+const ui = useUiStore()
 const step = ref(1)
 const loading = ref(false)
 const error = ref('')
@@ -96,9 +99,9 @@ async function submit() {
     })
     auth.setTokens(res.accessToken, res.refreshToken, res.admin)
     step.value = 6
-    // mark setup as done so router guard allows navigation
-    import('@/router').then((mod) => { mod.setupChecked = true })
-    sessionStorage.setItem('setup-checked', 'true')
+    import('@/router').then((mod) => {
+      mod.setSiteConfigCache({ isSetup: true, requireLogin: false })
+    })
     setTimeout(() => router.replace({ name: 'tickets' }), 1800)
   } catch (e: any) {
     error.value = e?.message || '设置失败，请重试。'
@@ -109,7 +112,16 @@ async function submit() {
 </script>
 
 <template>
-  <div class="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-4">
+  <div class="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-4 relative">
+    <div class="absolute top-4 right-4">
+      <button
+        @click="ui.toggleTheme()"
+        class="p-2 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+        :aria-label="ui.theme === 'dark' ? '切换到亮色模式' : '切换到暗色模式'"
+      >
+        <Icon :icon="ui.theme === 'dark' ? 'lucide:sun' : 'lucide:moon'" class="w-5 h-5" />
+      </button>
+    </div>
     <div class="w-full max-w-xl bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-8">
       <div class="mb-8">
         <h1 class="text-2xl font-bold text-slate-900 dark:text-slate-100">站点初始化</h1>

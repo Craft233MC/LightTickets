@@ -1,7 +1,8 @@
 import { apiFetch } from './client';
 
-export interface SetupStatus {
+export interface SiteConfig {
   isSetup: boolean;
+  requireLogin: boolean;
   siteName: string;
 }
 
@@ -43,13 +44,25 @@ export interface SetupResult {
   refreshToken: string;
 }
 
-export async function getSetupStatus(): Promise<SetupStatus> {
-  return apiFetch<SetupStatus>('/setup/status', { method: 'GET' });
+export interface SettingsResult {
+  requireLogin: boolean;
+  siteName: string;
+}
+
+export async function getSiteConfig(): Promise<SiteConfig> {
+  return apiFetch<SiteConfig>('/setup/site-config', { method: 'GET' });
 }
 
 export async function completeSetup(payload: SetupPayload): Promise<SetupResult> {
   return apiFetch<SetupResult>('/setup', {
     method: 'POST',
     body: JSON.stringify(payload),
+  });
+}
+
+export async function updateSettings(data: { requireLogin?: boolean }): Promise<SettingsResult> {
+  return apiFetch<SettingsResult>('/setup/settings', {
+    method: 'PATCH',
+    body: JSON.stringify(data),
   });
 }

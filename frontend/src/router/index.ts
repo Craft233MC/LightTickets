@@ -1,9 +1,33 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import { getSetupStatus } from '@/api/setup'
+import { getSiteConfig } from '@/api/setup'
 
-const stored = sessionStorage.getItem('setup-checked')
-export let setupChecked: boolean | null = stored === 'true' ? true : stored === 'false' ? false : null
+// Site config cache (persists per session)
+function getCachedSiteConfig() {
+  const isSetup = sessionStorage.getItem('lt-setup-checked')
+  const requireLogin = sessionStorage.getItem('lt-require-login')
+  return {
+    isSetup: isSetup === 'true' ? true : isSetup === 'false' ? false : null,
+    requireLogin: requireLogin === 'true' ? true : requireLogin === 'false' ? false : null,
+  }
+}
+
+export let siteConfig = getCachedSiteConfig()
+
+function updateSiteConfigCache(data: { isSetup: boolean; requireLogin: boolean }) {
+  siteConfig = { isSetup: data.isSetup, requireLogin: data.requireLogin }
+  sessionStorage.setItem('lt-setup-checked', String(data.isSetup))
+  sessionStorage.setItem('lt-require-login', String(data.requireLogin))
+}
+
+export function setSiteConfigCache(data: { isSetup: boolean; requireLogin: boolean }) {
+  updateSiteConfigCache(data)
+}
+
+export function setRequireLoginCache(value: boolean) {
+  siteConfig.requireLogin = value
+  sessionStorage.setItem('lt-require-login', String(value))
+}
 
 const router = createRouter({
   history: createWebHistory(),
@@ -30,7 +54,7 @@ const router = createRouter({
       path: '/',
       name: 'tickets',
       component: () => import('@/views/TicketListView.vue'),
-      meta: { auth: true },
+      meta: { public: true },
     },
     {
       path: '/tickets/new',
@@ -42,7 +66,7 @@ const router = createRouter({
       path: '/tickets/:id',
       name: 'ticket-detail',
       component: () => import('@/views/TicketDetailView.vue'),
-      meta: { auth: true },
+      meta: { public: true },
     },
     {
       path: '/profile',
@@ -68,42 +92,54 @@ const router = createRouter({
 router.beforeEach(async (to) => {
   const auth = useAuthStore()
 
+  // 1. Wait for auth restore
   if (auth.loading) {
     await auth.restore()
   }
 
-  // Setup guard: if not set up, only allow setup page
-  if (setupChecked === null && to.name !== 'setup') {
+  // 2. Fetch site config if not cached
+  if (siteConfig.isSetup === null) {
     try {
-      const status = await getSetupStatus()
-      setupChecked = status.isSetup
-      sessionStorage.setItem('setup-checked', String(setupChecked))
-      if (!setupChecked) {
-        return { name: 'setup' }
-      }
+      const config = await getSiteConfig()
+      updateSiteConfigCache(config)
     } catch {
-      setupChecked = false
-      sessionStorage.setItem('setup-checked', 'false')
-      return { name: 'setup' }
+      siteConfig.isSetup = false
+      siteConfig.requireLogin = false
+      sessionStorage.setItem('lt-setup-checked', 'false')
+      sessionStorage.setItem('lt-require-login', 'false')
     }
   }
 
-  if (to.meta.setup && setupChecked) {
+  // 3. Setup page protection: if already setup, redirect away from /setup
+  if (to.meta.setup && siteConfig.isSetup) {
     return { name: 'tickets' }
   }
 
-  if (to.meta.setup && setupChecked === false) {
-    return true
+  // 4. If not setup, only allow setup page
+  if (!siteConfig.isSetup && to.name !== 'setup') {
+    return { name: 'setup' }
   }
 
-  if (to.meta.auth && !auth.isAuthenticated) {
-    return { name: 'login', query: { redirect: to.fullPath } }
+  // 5. requireLogin check
+  const requireLogin = siteConfig.requireLogin === true
+
+  if (!auth.isAuthenticated) {
+    // requireLogin ON: all non-guest routes require auth
+    if (requireLogin && !to.meta.guest && !to.meta.setup) {
+      return { name: 'login', query: { redirect: to.fullPath } }
+    }
+    // requireLogin OFF: only meta.auth routes require auth
+    if (!requireLogin && to.meta.auth) {
+      return { name: 'login', query: { redirect: to.fullPath } }
+    }
   }
 
-  if (to.meta.guest && auth.isAuthenticated) {
+  // 6. Already logged in visiting guest routes → go home
+  if (auth.isAuthenticated && to.meta.guest) {
     return { name: 'tickets' }
   }
 
+  // 7. Admin check
   if (to.meta.admin && !auth.isAdmin) {
     return { name: 'tickets' }
   }

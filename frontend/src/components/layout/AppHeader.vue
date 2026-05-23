@@ -1,12 +1,22 @@
 <script setup lang="ts">
 import { Icon } from '@iconify/vue'
-import { RouterLink } from 'vue-router'
+import { RouterLink, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useUiStore } from '@/stores/ui'
+import { siteConfig } from '@/router'
 import BaseButton from '@/components/base/BaseButton.vue'
 
 const auth = useAuthStore()
 const ui = useUiStore()
+const router = useRouter()
+
+function handleLogout() {
+  auth.logout()
+  ui.mobileMenuOpen = false
+  if (siteConfig.requireLogin) {
+    router.push({ name: 'login' })
+  }
+}
 </script>
 
 <template>
@@ -42,7 +52,7 @@ const ui = useUiStore()
             </button>
             <div class="absolute right-0 top-full mt-1 w-48 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
               <RouterLink to="/profile" class="block px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">个人资料</RouterLink>
-              <button @click="auth.logout()" class="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-slate-50 dark:hover:bg-slate-700">退出登录</button>
+              <button @click="handleLogout" class="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-slate-50 dark:hover:bg-slate-700">退出登录</button>
             </div>
           </div>
         </template>
@@ -90,7 +100,7 @@ const ui = useUiStore()
                 <Icon icon="lucide:user" class="w-4 h-4 text-slate-500 dark:text-slate-400" />
                 个人资料
               </RouterLink>
-              <button @click="auth.logout(); ui.mobileMenuOpen = false" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+              <button @click="handleLogout" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
                 <Icon icon="lucide:log-out" class="w-4 h-4" />
                 退出登录
               </button>

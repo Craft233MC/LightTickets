@@ -3,7 +3,7 @@ import { z } from 'zod';
 import * as ticketService from '../services/ticket.service.js';
 import * as labelService from '../services/label.service.js';
 import * as permissionService from '../services/permission.service.js';
-import { authMiddleware } from '../middleware/auth.js';
+import { authMiddleware, conditionalAuthMiddleware } from '../middleware/auth.js';
 import { requireRole } from '../middleware/role.js';
 import { ValidationError } from '../utils/errors.js';
 
@@ -17,9 +17,7 @@ const createSchema = z.object({
   serverId: z.string().optional(),
 });
 
-router.use(authMiddleware);
-
-router.post('/', async (req: Request, res: Response) => {
+router.post('/', authMiddleware, async (req: Request, res: Response) => {
   const parsed = createSchema.safeParse(req.body);
   if (!parsed.success) throw new ValidationError(parsed.error.issues[0].message);
 
@@ -27,7 +25,7 @@ router.post('/', async (req: Request, res: Response) => {
   res.status(201).json(ticket);
 });
 
-router.get('/', async (req: Request, res: Response) => {
+router.get('/', conditionalAuthMiddleware, async (req: Request, res: Response) => {
   const result = await ticketService.list({
     page: req.query.page ? Number(req.query.page) : undefined,
     pageSize: req.query.pageSize ? Number(req.query.pageSize) : undefined,
@@ -41,35 +39,35 @@ router.get('/', async (req: Request, res: Response) => {
   res.json(result);
 });
 
-router.get('/:id', async (req: Request, res: Response) => {
+router.get('/:id', conditionalAuthMiddleware, async (req: Request, res: Response) => {
   const ticket = await ticketService.getById(req.params.id);
   res.json(ticket);
 });
 
-router.patch('/:id', async (req: Request, res: Response) => {
+router.patch('/:id', authMiddleware, async (req: Request, res: Response) => {
   const ticket = await ticketService.update(req.params.id, req.user!.userId, req.user!.role, req.body);
   res.json(ticket);
 });
 
-router.post('/:id/approve', requireRole('staff'), async (req: Request, res: Response) => {
+router.post('/:id/approve', authMiddleware, requireRole('staff'), async (req: Request, res: Response) => {
   const ticket = await permissionService.approve(req.params.id, req.user!.userId);
   res.json(ticket);
 });
 
-router.post('/:id/reject', requireRole('staff'), async (req: Request, res: Response) => {
+router.post('/:id/reject', authMiddleware, requireRole('staff'), async (req: Request, res: Response) => {
   const ticket = await permissionService.reject(req.params.id, req.user!.userId, req.body.reason);
   res.json(ticket);
 });
 
 // Labels
-router.post('/:id/labels', requireRole('staff'), async (req: Request, res: Response) => {
+router.post('/:id/labels', authMiddleware, requireRole('staff'), async (req: Request, res: Response) => {
   const { labelId } = req.body;
   if (!labelId) throw new ValidationError('标签ID不能为空');
   await labelService.addToTicket(req.params.id, labelId);
   res.status(201).end();
 });
 
-router.delete('/:id/labels/:labelId', requireRole('staff'), async (req: Request, res: Response) => {
+router.delete('/:id/labels/:labelId', authMiddleware, requireRole('staff'), async (req: Request, res: Response) => {
   await labelService.removeFromTicket(req.params.id, req.params.labelId);
   res.status(204).end();
 });
