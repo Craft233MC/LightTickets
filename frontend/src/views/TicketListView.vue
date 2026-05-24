@@ -23,6 +23,7 @@ const statusTabs: { key: TicketStatus | 'all'; label: string; icon: string }[] =
   { key: 'open', label: '开放', icon: 'lucide:circle-dot' },
   { key: 'in_progress', label: '处理中', icon: 'lucide:loader' },
   { key: 'resolved', label: '已解决', icon: 'lucide:check-circle-2' },
+  { key: 'closed', label: '无效', icon: 'lucide:ban' },
   { key: 'all', label: '全部', icon: 'lucide:list' },
 ]
 
@@ -127,7 +128,7 @@ watch(() => store.filters.search, () => {
         class="flex items-start gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
       >
         <Icon
-          :icon="ticket.status === 'open' ? 'lucide:circle-dot' : ticket.status === 'resolved' ? 'lucide:check-circle-2' : 'lucide:circle'"
+          :icon="ticket.status === 'open' ? 'lucide:circle-dot' : ticket.status === 'resolved' ? 'lucide:check-circle-2' : ticket.status === 'closed' ? 'lucide:ban' : ticket.status === 'in_progress' ? 'lucide:loader' : 'lucide:circle'"
           class="w-5 h-5 mt-0.5 shrink-0"
           :class="{
             'text-green-500': ticket.status === 'open',
