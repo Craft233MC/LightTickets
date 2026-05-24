@@ -9,5 +9,5 @@ const server = createServer(app);
 initSocket(server);
 
 server.listen(config.port, () => {
-  console.log(`LightTicket API running on port ${config.port}`);
+  console.log(`LightTickets API running on port ${config.port}`);
 });

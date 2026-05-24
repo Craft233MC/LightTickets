@@ -23,10 +23,10 @@ function handleLogout() {
     <div class="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
       <div class="flex items-center gap-6">
         <RouterLink to="/" class="text-lg font-semibold text-slate-900 dark:text-white">
-          LightTicket
+          LightTickets
         </RouterLink>
         <nav v-if="auth.isAuthenticated" class="hidden sm:flex items-center gap-4 text-sm text-slate-600 dark:text-slate-400">
-          <RouterLink to="/" class="hover:text-slate-900 dark:hover:text-white transition-colors">工单</RouterLink>
+          <RouterLink to="/" class="hover:text-slate-900 dark:hover:text-white transition-colors">议题</RouterLink>
           <RouterLink v-if="auth.isAdmin" to="/admin" class="hover:text-slate-900 dark:hover:text-white transition-colors">管理</RouterLink>
         </nav>
       </div>
@@ -82,7 +82,7 @@ function handleLogout() {
             <template v-if="auth.isAuthenticated">
               <RouterLink to="/" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors" @click="ui.mobileMenuOpen = false">
                 <Icon icon="lucide:ticket" class="w-4 h-4 text-slate-500 dark:text-slate-400" />
-                工单
+                议题
               </RouterLink>
               <RouterLink v-if="auth.isAdmin" to="/admin" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors" @click="ui.mobileMenuOpen = false">
                 <Icon icon="lucide:shield" class="w-4 h-4 text-slate-500 dark:text-slate-400" />

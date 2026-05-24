@@ -9,7 +9,7 @@ describe('GET /api/setup/status', () => {
     const res = await request(app).get('/api/setup/status');
     expect(res.status).toBe(200);
     expect(res.body.isSetup).toBe(false);
-    expect(res.body.siteName).toBe('LightTicket');
+    expect(res.body.siteName).toBe('LightTickets');
   });
 });
 

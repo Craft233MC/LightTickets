@@ -42,7 +42,7 @@ async function submit() {
     <div class="w-full max-w-sm space-y-6">
       <div class="text-center">
         <h1 class="text-2xl font-bold text-slate-900 dark:text-white">注册</h1>
-        <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">创建 LightTicket 账号</p>
+        <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">创建 LightTickets 账号</p>
       </div>
 
       <form @submit.prevent="submit" class="space-y-4">

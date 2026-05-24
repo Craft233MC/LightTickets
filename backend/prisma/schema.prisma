@@ -190,7 +190,7 @@ model LinkCode {
 model SetupStatus {
   id           String   @id @default(cuid())
   isSetup      Boolean  @default(false) @map("is_setup")
-  siteName     String   @default("LightTicket") @map("site_name")
+  siteName     String   @default("LightTickets") @map("site_name")
   siteUrl      String?  @map("site_url")
   requireLogin Boolean  @default(false) @map("require_login")
   createdAt    DateTime @default(now()) @map("created_at")

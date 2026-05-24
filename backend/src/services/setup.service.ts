@@ -46,7 +46,7 @@ export async function getSiteConfig(): Promise<SiteConfig> {
   cachedSiteConfig = {
     isSetup: status?.isSetup ?? false,
     requireLogin: status?.requireLogin ?? false,
-    siteName: status?.siteName ?? 'LightTicket',
+    siteName: status?.siteName ?? 'LightTickets',
   };
   return cachedSiteConfig;
 }
@@ -74,7 +74,7 @@ export async function getSetupStatus() {
   const status = await prisma.setupStatus.findFirst();
   return {
     isSetup: status?.isSetup ?? false,
-    siteName: status?.siteName ?? 'LightTicket',
+    siteName: status?.siteName ?? 'LightTickets',
   };
 }
 
@@ -124,7 +124,7 @@ export async function completeSetup(input: SetupInput) {
   const setupRecord = await prisma.setupStatus.create({
     data: {
       isSetup: true,
-      siteName: siteConfig.siteName || 'LightTicket',
+      siteName: siteConfig.siteName || 'LightTickets',
       siteUrl: siteConfig.siteUrl || null,
     },
   });

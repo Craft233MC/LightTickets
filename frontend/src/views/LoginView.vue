@@ -34,7 +34,7 @@ async function submit() {
     <div class="w-full max-w-sm space-y-6">
       <div class="text-center">
         <h1 class="text-2xl font-bold text-slate-900 dark:text-white">登录</h1>
-        <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">登录到 LightTicket</p>
+        <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">登录到 LightTickets</p>
       </div>
 
       <form @submit.prevent="submit" class="space-y-4">

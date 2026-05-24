@@ -26,7 +26,7 @@ const payload = reactive<SetupPayload>({
     username: '',
   },
   site: {
-    siteName: 'LightTicket',
+    siteName: 'LightTickets',
     siteUrl: '',
   },
   mc: {
@@ -140,7 +140,7 @@ async function submit() {
           <div class="w-16 h-16 rounded-2xl bg-slate-900 dark:bg-slate-100 mx-auto mb-4 flex items-center justify-center text-white dark:text-slate-900 text-2xl font-bold">
             LT
           </div>
-          <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100">欢迎使用 LightTicket</h2>
+          <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100">欢迎使用 LightTickets</h2>
           <p class="text-slate-500 dark:text-slate-400 mt-2 text-sm leading-relaxed max-w-xs mx-auto">
             本向导将帮助你完成站点初始化：数据库配置、管理员账户创建和基本站点设置。
           </p>
@@ -223,7 +223,7 @@ async function submit() {
       <!-- Step 4: Site Settings -->
       <div v-else-if="step === 4" class="space-y-5">
         <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100">站点设置</h2>
-        <BaseInput v-model="payload.site!.siteName" label="站点名称" placeholder="LightTicket" />
+        <BaseInput v-model="payload.site!.siteName" label="站点名称" placeholder="LightTickets" />
         <BaseInput v-model="payload.site!.siteUrl" label="站点地址（可选）" placeholder="https://ticket.example.com" />
       </div>
 
@@ -240,7 +240,7 @@ async function submit() {
           ✓
         </div>
         <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100">设置完成！</h2>
-        <p class="text-slate-500 dark:text-slate-400 text-sm">正在跳转至工单列表...</p>
+        <p class="text-slate-500 dark:text-slate-400 text-sm">正在跳转至议题列表...</p>
       </div>
 
       <div v-if="error" class="mt-4 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-3 py-2 rounded-lg">
