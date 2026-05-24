@@ -14,7 +14,21 @@ import BaseTextarea from '@/components/base/BaseTextarea.vue'
 import MarkdownRenderer from '@/components/markdown/MarkdownRenderer.vue'
 import TicketLabels from '@/components/tickets/TicketLabels.vue'
 import TicketAuditLog from '@/components/tickets/TicketAuditLog.vue'
-import type { Comment, TicketStatus } from '@/types/ticket'
+import type { Comment, TicketStatus, TicketType, Priority } from '@/types/ticket'
+
+const typeLabels: Record<TicketType, string> = {
+  bug_report: 'Bug 报告',
+  permission_request: '权限申请',
+  suggestion: '建议',
+  report: '举报',
+}
+
+const priorityLabels: Record<Priority, string> = {
+  low: '低',
+  medium: '中',
+  high: '高',
+  critical: '紧急',
+}
 
 const route = useRoute()
 const store = useTicketsStore()
@@ -181,11 +195,11 @@ usePolling(async () => {
       <div class="p-4 rounded-lg border border-slate-200 dark:border-slate-700 space-y-3 text-sm">
         <div class="flex justify-between">
           <span class="text-slate-500 dark:text-slate-400">类型</span>
-          <span class="text-slate-700 dark:text-slate-300">{{ ticket.type }}</span>
+          <span class="text-slate-700 dark:text-slate-300">{{ typeLabels[ticket.type] }}</span>
         </div>
         <div class="flex justify-between">
           <span class="text-slate-500 dark:text-slate-400">优先级</span>
-          <span class="text-slate-700 dark:text-slate-300">{{ ticket.priority }}</span>
+          <span class="text-slate-700 dark:text-slate-300">{{ priorityLabels[ticket.priority] }}</span>
         </div>
         <div v-if="ticket.assignee" class="flex justify-between">
           <span class="text-slate-500 dark:text-slate-400">负责人</span>
