@@ -79,24 +79,26 @@ watch(() => store.filters.search, () => {
 <template>
   <div class="space-y-4">
     <div class="flex items-center justify-between">
-      <h1 class="text-xl font-bold text-slate-900 dark:text-white">议题</h1>
+      <h1 class="text-3xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-4xl">议题</h1>
       <BaseButton v-if="auth.isAuthenticated" as="router-link" to="/tickets/new" size="sm" icon="lucide:plus">新建</BaseButton>
-      <RouterLink v-else to="/login" class="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">登录以创建议题</RouterLink>
+      <RouterLink v-else to="/login" class="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition">登录以创建议题</RouterLink>
     </div>
 
     <!-- Status tabs -->
-    <div class="flex items-center gap-1 border-b border-slate-200 dark:border-slate-700">
+    <div class="status-tabs-scroll flex items-center gap-1 border-b border-slate-200 dark:border-slate-800 overflow-x-auto">
       <button
         v-for="tab in statusTabs"
         :key="tab.key"
         @click="setStatus(tab.key)"
-        class="flex items-center gap-1.5 px-3 py-2 text-sm font-medium border-b-2 -mb-px transition-colors"
+        class="nav-link -mb-px px-3 py-2 text-sm font-medium transition whitespace-nowrap shrink-0"
         :class="(!store.filters.status && tab.key === 'all') || store.filters.status === tab.key
-          ? 'border-slate-900 text-slate-800 dark:border-slate-100 dark:text-slate-200'
-          : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'"
+          ? 'nav-link-active'
+          : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'"
       >
-        <Icon :icon="tab.icon" class="w-4 h-4" />
-        {{ tab.label }}
+        <span class="nav-link-text inline-flex items-center gap-1.5">
+          <Icon :icon="tab.icon" class="w-4 h-4" />
+          {{ tab.label }}
+        </span>
       </button>
     </div>
 
@@ -107,7 +109,7 @@ watch(() => store.filters.search, () => {
         v-model="store.filters.search"
         type="text"
         placeholder="搜索议题..."
-        class="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900/40 focus:border-slate-900 dark:focus:ring-slate-100/40 dark:focus:border-slate-100 transition-colors"
+        class="w-full pl-9 pr-3 py-2 text-sm rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900/20 focus:border-slate-400 dark:focus:ring-slate-100/20 dark:focus:border-slate-600 transition"
       />
     </div>
 
@@ -120,16 +122,16 @@ watch(() => store.filters.search, () => {
       暂无议题
     </div>
 
-    <div v-else class="divide-y divide-slate-100 dark:divide-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
+    <div v-else class="divide-y divide-slate-200 dark:divide-slate-800 border border-slate-200/80 dark:border-slate-800/80 rounded-xl overflow-hidden">
       <RouterLink
         v-for="ticket in store.tickets"
         :key="ticket.id"
         :to="`/tickets/${ticket.id}`"
-        class="flex items-start gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+        class="flex items-center gap-4 px-5 py-4 sm:px-6 hover:bg-slate-50/80 dark:hover:bg-slate-800/20 transition"
       >
         <Icon
           :icon="ticket.status === 'open' ? 'lucide:circle-dot' : ticket.status === 'resolved' ? 'lucide:check-circle-2' : ticket.status === 'closed' ? 'lucide:ban' : ticket.status === 'in_progress' ? 'lucide:loader' : 'lucide:circle'"
-          class="w-5 h-5 mt-0.5 shrink-0"
+          class="w-5 h-5 shrink-0"
           :class="{
             'text-green-500': ticket.status === 'open',
             'text-purple-500': ticket.status === 'resolved',
@@ -144,11 +146,11 @@ watch(() => store.filters.search, () => {
               {{ tl.label.name }}
             </BaseBadge>
           </div>
-          <div class="mt-1 text-xs text-slate-500 dark:text-slate-400 flex items-center gap-3">
+          <div class="mt-1 text-sm text-slate-500 dark:text-slate-400 flex items-center gap-3">
             <span>{{ ticket.author.username }}</span>
             <span>{{ timeAgo(ticket.createdAt) }}</span>
             <span v-if="ticket._count?.comments" class="flex items-center gap-0.5">
-              <Icon icon="lucide:message-square" class="w-3 h-3" />
+              <Icon icon="lucide:message-square" class="w-3.5 h-3.5" />
               {{ ticket._count.comments }}
             </span>
           </div>
