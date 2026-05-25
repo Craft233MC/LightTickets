@@ -2,7 +2,8 @@
 import { Icon } from '@iconify/vue'
 
 defineProps<{
-  variant?: 'primary' | 'secondary' | 'ghost' | 'danger'
+  variant?: 'primary' | 'danger'
+  filled?: boolean
   size?: 'sm' | 'md' | 'lg'
   icon?: string
   loading?: boolean
@@ -15,18 +16,14 @@ defineProps<{
   <component
     :is="as || 'button'"
     :disabled="as ? undefined : (disabled || loading)"
-    class="inline-flex items-center justify-center gap-1.5 font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+    :data-variant="variant || 'primary'"
+    :data-filled="filled || undefined"
+    class="inline-flex items-center justify-center gap-1.5 font-semibold rounded-md transition disabled:opacity-50 disabled:cursor-not-allowed"
     :class="[
       {
-        '!bg-black !text-gray-100 hover:!bg-gray-800 active:!bg-gray-700 dark:!bg-slate-800 dark:!text-slate-100 dark:hover:!bg-slate-700 dark:active:!bg-slate-600': variant === 'primary' || !variant,
-        'border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800': variant === 'secondary',
-        'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white': variant === 'ghost',
-        'bg-red-500 text-white hover:bg-red-600 active:bg-red-700': variant === 'danger',
-      },
-      {
         'px-2.5 py-1.5 text-xs': size === 'sm',
-        'px-3.5 py-2 text-sm': size === 'md' || !size,
-        'px-5 py-2.5 text-base': size === 'lg',
+        'px-5 py-2.5 text-sm': size === 'md' || !size,
+        'px-6 py-3 text-sm': size === 'lg',
       },
     ]"
   >
@@ -35,3 +32,84 @@ defineProps<{
     <slot />
   </component>
 </template>
+
+<style scoped>
+/* Primary filled */
+[data-variant="primary"][data-filled] {
+  background-color: #0f172a;
+  color: #fff;
+  border: none;
+}
+[data-variant="primary"][data-filled]:hover {
+  background-color: #1e293b;
+}
+[data-variant="primary"][data-filled]:active {
+  background-color: #020617;
+}
+:is(.dark *) [data-variant="primary"][data-filled] {
+  background-color: #f1f5f9;
+  color: #0f172a;
+}
+:is(.dark *) [data-variant="primary"][data-filled]:hover {
+  background-color: #e2e8f0;
+}
+:is(.dark *) [data-variant="primary"][data-filled]:active {
+  background-color: #cbd5e1;
+}
+
+/* Primary outline */
+[data-variant="primary"]:not([data-filled]) {
+  background-color: transparent;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+}
+[data-variant="primary"]:not([data-filled]):hover {
+  background-color: #f1f5f9;
+}
+[data-variant="primary"]:not([data-filled]):active {
+  background-color: #e2e8f0;
+}
+:is(.dark *) [data-variant="primary"]:not([data-filled]) {
+  border-color: #334155;
+  color: #e2e8f0;
+}
+:is(.dark *) [data-variant="primary"]:not([data-filled]):hover {
+  background-color: #1e293b;
+}
+:is(.dark *) [data-variant="primary"]:not([data-filled]):active {
+  background-color: #334155;
+}
+
+/* Danger filled */
+[data-variant="danger"][data-filled] {
+  background-color: #ef4444;
+  color: #fff;
+  border: none;
+}
+[data-variant="danger"][data-filled]:hover {
+  background-color: #dc2626;
+}
+[data-variant="danger"][data-filled]:active {
+  background-color: #b91c1c;
+}
+
+/* Danger outline */
+[data-variant="danger"]:not([data-filled]) {
+  background-color: transparent;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+}
+[data-variant="danger"]:not([data-filled]):hover {
+  background-color: rgba(239, 68, 68, 0.1);
+}
+[data-variant="danger"]:not([data-filled]):active {
+  background-color: rgba(239, 68, 68, 0.2);
+}
+:is(.dark *) [data-variant="danger"]:not([data-filled]) {
+  border-color: rgba(248, 113, 113, 0.3);
+  color: #f87171;
+}
+:is(.dark *) [data-variant="danger"]:not([data-filled]):hover {
+  background-color: rgba(248, 113, 113, 0.1);
+}
+</style>
