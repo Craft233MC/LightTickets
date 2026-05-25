@@ -16,17 +16,17 @@ const emit = defineEmits<{
     <button
       :disabled="page <= 1"
       @click="emit('update:page', page - 1)"
-      class="p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+      class="p-2 rounded-md text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition"
     >
       <Icon icon="lucide:chevron-left" class="w-4 h-4" />
     </button>
-    <span class="text-sm text-slate-600 dark:text-slate-400">
+    <span class="text-sm text-slate-700 dark:text-slate-300">
       {{ page }} / {{ totalPages }}
     </span>
     <button
       :disabled="page >= totalPages"
       @click="emit('update:page', page + 1)"
-      class="p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+      class="p-2 rounded-md text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition"
     >
       <Icon icon="lucide:chevron-right" class="w-4 h-4" />
     </button>
