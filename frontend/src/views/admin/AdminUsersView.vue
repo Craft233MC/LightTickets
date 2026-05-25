@@ -31,42 +31,42 @@ onMounted(fetchUsers)
 
 <template>
   <div class="space-y-4">
-    <h2 class="text-lg font-semibold text-slate-900 dark:text-white">用户管理</h2>
+    <h2 class="text-xl font-semibold tracking-tight text-slate-950 dark:text-white">用户管理</h2>
 
-    <div class="overflow-x-auto border border-slate-200 dark:border-slate-700 rounded-lg">
+    <div class="overflow-x-auto border border-slate-200/80 dark:border-slate-800/80 rounded-xl">
       <table class="w-full text-sm">
-        <thead class="bg-slate-50 dark:bg-slate-800/50">
+        <thead class="bg-slate-50/80 dark:bg-slate-800/50 backdrop-blur-sm">
           <tr>
-            <th class="px-4 py-3 text-left font-medium text-slate-600 dark:text-slate-400">用户名</th>
-            <th class="px-4 py-3 text-left font-medium text-slate-600 dark:text-slate-400">邮箱</th>
-            <th class="px-4 py-3 text-left font-medium text-slate-600 dark:text-slate-400">MC</th>
-            <th class="px-4 py-3 text-left font-medium text-slate-600 dark:text-slate-400">角色</th>
-            <th class="px-4 py-3 text-right font-medium text-slate-600 dark:text-slate-400">操作</th>
+            <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">用户名</th>
+            <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">邮箱</th>
+            <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">MC</th>
+            <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">角色</th>
+            <th class="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">操作</th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+        <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
           <tr v-for="user in users" :key="user.id">
-            <td class="px-4 py-3 text-slate-900 dark:text-white font-medium">{{ user.username }}</td>
-            <td class="px-4 py-3 text-slate-600 dark:text-slate-400">{{ user.email }}</td>
-            <td class="px-4 py-3 text-slate-600 dark:text-slate-400">{{ user.minecraftName || '-' }}</td>
-            <td class="px-4 py-3">
+            <td class="px-6 py-4 text-slate-900 dark:text-white font-medium">{{ user.username }}</td>
+            <td class="px-6 py-4 text-slate-600 dark:text-slate-400">{{ user.email }}</td>
+            <td class="px-6 py-4 text-slate-600 dark:text-slate-400">{{ user.minecraftName || '-' }}</td>
+            <td class="px-6 py-4">
               <select
                 :value="user.role"
                 @change="changeRole(user.id, ($event.target as HTMLSelectElement).value as Role)"
-                class="px-2 py-1 text-xs rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300"
+                class="px-2 py-1 text-xs rounded-md border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-900/80 text-slate-700 dark:text-slate-300 backdrop-blur-sm"
               >
                 <option value="player">player</option>
                 <option value="staff">staff</option>
                 <option value="admin">admin</option>
               </select>
             </td>
-            <td class="px-4 py-3 text-right">
+            <td class="px-6 py-4 text-right">
               <span class="text-xs text-slate-400">{{ user.createdAt?.slice(0, 10) }}</span>
             </td>
           </tr>
         </tbody>
       </table>
-      <div v-if="!users.length" class="px-4 py-8 text-center text-sm text-slate-400">暂无用户</div>
+      <div v-if="!users.length" class="px-6 py-8 text-center text-sm text-slate-500 dark:text-slate-400">暂无用户</div>
     </div>
   </div>
 </template>

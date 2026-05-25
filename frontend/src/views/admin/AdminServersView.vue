@@ -57,19 +57,19 @@ onMounted(fetchServers)
 <template>
   <div class="space-y-4">
     <div class="flex items-center justify-between">
-      <h2 class="text-lg font-semibold text-slate-900 dark:text-white">服务器管理</h2>
+      <h2 class="text-xl font-semibold tracking-tight text-slate-950 dark:text-white">服务器管理</h2>
       <BaseButton size="sm" icon="lucide:plus" @click="showModal = true">添加服务器</BaseButton>
     </div>
 
     <div class="space-y-3">
-      <div v-for="server in servers" :key="server.id" class="p-4 rounded-lg border border-slate-200 dark:border-slate-700 space-y-2">
+      <div v-for="server in servers" :key="server.id" class="px-6 py-5 rounded-xl border border-slate-200/80 dark:border-slate-800/80 bg-white/70 dark:bg-slate-900/70 backdrop-blur space-y-2">
         <div class="flex items-center justify-between">
           <div>
             <h3 class="font-medium text-slate-900 dark:text-white">{{ server.name }}</h3>
             <p v-if="server.address" class="text-xs text-slate-500">{{ server.address }}</p>
           </div>
           <div class="flex gap-1">
-            <button @click="regenerate(server.id)" class="p-1.5 rounded text-slate-400 hover:text-yellow-500" title="重新生成 Key">
+            <button @click="regenerate(server.id)" class="p-1.5 rounded text-slate-400 hover:text-slate-700 dark:hover:text-slate-200" title="重新生成 Key">
               <Icon icon="lucide:refresh-cw" class="w-4 h-4" />
             </button>
             <button @click="remove(server.id)" class="p-1.5 rounded text-slate-400 hover:text-red-500" title="删除">
@@ -78,10 +78,10 @@ onMounted(fetchServers)
           </div>
         </div>
         <div class="flex items-center gap-2">
-          <code class="flex-1 px-2 py-1 text-xs bg-slate-100 dark:bg-slate-800 rounded font-mono truncate">{{ server.apiKey }}</code>
+          <code class="flex-1 px-2 py-1 text-xs bg-slate-100 dark:bg-slate-800 rounded-md font-mono truncate">{{ server.apiKey }}</code>
         </div>
       </div>
-      <div v-if="!servers.length" class="py-8 text-center text-sm text-slate-400">暂无服务器</div>
+      <div v-if="!servers.length" class="py-8 text-center text-sm text-slate-500 dark:text-slate-400">暂无服务器</div>
     </div>
 
     <BaseModal v-model="showModal" title="添加服务器">
@@ -90,8 +90,8 @@ onMounted(fetchServers)
         <BaseInput v-model="form.address" label="地址（可选）" placeholder="play.example.com" />
         <BaseInput v-model="form.description" label="描述（可选）" />
         <div class="flex justify-end gap-2">
-          <BaseButton variant="secondary" type="button" @click="showModal = false">取消</BaseButton>
-          <BaseButton type="submit" :disabled="!form.name.trim()">创建</BaseButton>
+          <BaseButton type="button" @click="showModal = false">取消</BaseButton>
+          <BaseButton filled type="submit" :disabled="!form.name.trim()">创建</BaseButton>
         </div>
       </form>
     </BaseModal>

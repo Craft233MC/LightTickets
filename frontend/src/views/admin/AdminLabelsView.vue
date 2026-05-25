@@ -59,11 +59,11 @@ onMounted(() => {
 <template>
   <div class="space-y-4">
     <div class="flex items-center justify-between">
-      <h2 class="text-lg font-semibold text-slate-900 dark:text-white">标签管理</h2>
+      <h2 class="text-xl font-semibold tracking-tight text-slate-950 dark:text-white">标签管理</h2>
       <BaseButton size="sm" icon="lucide:plus" @click="openCreate">新建标签</BaseButton>
     </div>
 
-    <div class="divide-y divide-slate-100 dark:divide-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg">
+    <div class="divide-y divide-slate-200 dark:divide-slate-800 border border-slate-200/80 dark:border-slate-800/80 rounded-xl">
       <div v-for="label in labels.labels" :key="label.id" class="flex items-center justify-between px-4 py-3">
         <div class="flex items-center gap-3">
           <span class="w-3 h-3 rounded-full" :style="{ backgroundColor: label.color }" />
@@ -71,7 +71,7 @@ onMounted(() => {
           <span v-if="label.description" class="text-xs text-slate-500">{{ label.description }}</span>
         </div>
         <div class="flex items-center gap-1">
-          <button @click="openEdit(label)" class="p-1.5 rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
+          <button @click="openEdit(label)" class="p-1.5 rounded text-slate-400 hover:text-slate-700 dark:hover:text-slate-200">
             <Icon icon="lucide:pencil" class="w-4 h-4" />
           </button>
           <button @click="remove(label.id)" class="p-1.5 rounded text-slate-400 hover:text-red-500">
@@ -79,7 +79,7 @@ onMounted(() => {
           </button>
         </div>
       </div>
-      <div v-if="!labels.labels.length" class="px-4 py-8 text-center text-sm text-slate-400">暂无标签</div>
+      <div v-if="!labels.labels.length" class="px-4 py-8 text-center text-sm text-slate-500 dark:text-slate-400">暂无标签</div>
     </div>
 
     <BaseModal v-model="showModal" :title="editingId ? '编辑标签' : '新建标签'">
@@ -88,14 +88,14 @@ onMounted(() => {
         <div class="space-y-1.5">
           <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">颜色</label>
           <div class="flex items-center gap-2">
-            <input v-model="form.color" type="color" class="w-8 h-8 rounded border border-slate-300 dark:border-slate-600 cursor-pointer" />
-            <input v-model="form.color" type="text" class="flex-1 px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" />
+            <input v-model="form.color" type="color" class="w-8 h-8 rounded-md border border-slate-300 dark:border-slate-700 cursor-pointer" />
+            <input v-model="form.color" type="text" class="flex-1 px-3 py-2 text-sm rounded-md border border-slate-300 dark:border-slate-700 bg-white/80 dark:bg-slate-900/80 text-slate-900 dark:text-slate-100 backdrop-blur-sm" />
           </div>
         </div>
         <BaseInput v-model="form.description" label="描述（可选）" placeholder="标签用途说明" />
         <div class="flex justify-end gap-2">
-          <BaseButton variant="secondary" type="button" @click="showModal = false">取消</BaseButton>
-          <BaseButton type="submit" :disabled="!form.name.trim()">保存</BaseButton>
+          <BaseButton type="button" @click="showModal = false">取消</BaseButton>
+          <BaseButton filled type="submit" :disabled="!form.name.trim()">保存</BaseButton>
         </div>
       </form>
     </BaseModal>

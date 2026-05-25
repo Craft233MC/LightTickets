@@ -19,10 +19,10 @@ const navItems = [
         v-for="item in navItems"
         :key="item.to"
         :to="item.to"
-        class="flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-colors"
+        class="flex items-center gap-2 px-4 py-3 text-sm rounded-md transition"
         :class="route.path === item.to
-          ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-200 font-medium'
-          : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'"
+          ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 font-medium'
+          : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'"
       >
         <Icon :icon="item.icon" class="w-4 h-4" />
         {{ item.label }}
