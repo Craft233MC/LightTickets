@@ -111,7 +111,7 @@ usePolling(async () => {
   <div v-else class="space-y-6">
     <!-- Header (full width, like GitHub issue title) -->
     <div>
-      <h1 class="text-xl font-bold text-slate-900 dark:text-white">{{ ticket.title }}</h1>
+      <h1 class="text-3xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-4xl">{{ ticket.title }}</h1>
       <div class="mt-2 flex items-center gap-3 text-sm text-slate-500 dark:text-slate-400">
         <span>{{ ticket.author.username }}</span>
         <span :title="formatDate(ticket.createdAt)">{{ timeAgo(ticket.createdAt) }}</span>
@@ -124,16 +124,16 @@ usePolling(async () => {
       <!-- Main content -->
       <div class="flex-1 min-w-0 space-y-6">
         <!-- Body -->
-        <div class="p-4 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50">
+        <div class="p-6 rounded-xl border border-slate-200/80 dark:border-slate-800/80 bg-white/70 dark:bg-slate-900/70 backdrop-blur">
           <MarkdownRenderer :content="ticket.body" />
         </div>
 
         <!-- Comments -->
         <div class="space-y-4">
-          <h2 class="text-sm font-semibold text-slate-700 dark:text-slate-300">评论 ({{ comments.length }})</h2>
+          <h2 class="text-sm font-semibold text-slate-900 dark:text-slate-100">评论 ({{ comments.length }})</h2>
 
           <div v-for="comment in comments" :key="comment.id" class="flex gap-3">
-            <div class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-xs font-medium text-slate-600 dark:text-slate-300 shrink-0">
+            <div class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-xs font-medium text-slate-600 dark:text-slate-300 shrink-0">
               {{ comment.author.username.charAt(0).toUpperCase() }}
             </div>
             <div class="flex-1 min-w-0">
@@ -161,8 +161,8 @@ usePolling(async () => {
       <!-- Sidebar -->
       <aside class="space-y-4 lg:w-[280px] lg:shrink-0">
         <!-- Status -->
-        <div class="p-4 rounded-lg border border-slate-200 dark:border-slate-700 space-y-3">
-          <h3 class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">状态</h3>
+        <div class="px-6 py-5 rounded-xl border border-slate-200/80 dark:border-slate-800/80 bg-white/70 dark:bg-slate-900/70 backdrop-blur space-y-3">
+          <h3 class="text-xs font-semibold tracking-[0.18em] uppercase text-slate-500 dark:text-slate-400">状态</h3>
           <div class="flex items-center gap-2">
             <Icon
               :icon="statusOptions.find(s => s.key === ticket!.status)?.icon || 'lucide:ban'"
@@ -180,12 +180,11 @@ usePolling(async () => {
           </div>
 
           <!-- Staff actions -->
-          <div v-if="auth.isStaff" class="flex flex-wrap gap-1.5 pt-2 border-t border-slate-100 dark:border-slate-700">
+          <div v-if="auth.isStaff" class="flex flex-wrap gap-1.5 pt-2 border-t border-slate-200 dark:border-slate-800">
             <BaseButton
               v-for="opt in statusOptions.filter(s => s.key !== ticket!.status)"
               :key="opt.key"
               size="sm"
-              variant="ghost"
               @click="changeStatus(opt.key)"
             >
               {{ opt.label }}
@@ -194,7 +193,7 @@ usePolling(async () => {
         </div>
 
         <!-- Info -->
-        <div class="p-4 rounded-lg border border-slate-200 dark:border-slate-700 space-y-3 text-sm">
+        <div class="px-6 py-5 rounded-xl border border-slate-200/80 dark:border-slate-800/80 bg-white/70 dark:bg-slate-900/70 backdrop-blur space-y-3 text-sm">
           <div class="flex justify-between">
             <span class="text-slate-500 dark:text-slate-400">类型</span>
             <span class="text-slate-700 dark:text-slate-300">{{ typeLabels[ticket.type] }}</span>
@@ -217,19 +216,19 @@ usePolling(async () => {
         <TicketLabels v-if="ticket" :ticket="ticket" />
 
         <!-- Audit Log -->
-        <div class="p-4 rounded-lg border border-slate-200 dark:border-slate-700">
+        <div class="px-6 py-5 rounded-xl border border-slate-200/80 dark:border-slate-800/80 bg-white/70 dark:bg-slate-900/70 backdrop-blur space-y-2">
           <TicketAuditLog :ticket-id="ticket.id" />
         </div>
 
         <!-- Permission request actions -->
-        <div v-if="ticket.type === 'permission_request' && ticket.permissionRequest && auth.isStaff" class="p-4 rounded-lg border border-slate-200 dark:border-slate-700 space-y-3">
-          <h3 class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">权限操作</h3>
+        <div v-if="ticket.type === 'permission_request' && ticket.permissionRequest && auth.isStaff" class="px-6 py-5 rounded-xl border border-slate-200/80 dark:border-slate-800/80 bg-white/70 dark:bg-slate-900/70 backdrop-blur space-y-3">
+          <h3 class="text-xs font-semibold tracking-[0.18em] uppercase text-slate-500 dark:text-slate-400">权限操作</h3>
           <div class="text-sm text-slate-600 dark:text-slate-400">
             <span v-if="ticket.permissionRequest.groupName">组: {{ ticket.permissionRequest.groupName }}</span>
             <span v-if="ticket.permissionRequest.permissionNode">节点: {{ ticket.permissionRequest.permissionNode }}</span>
           </div>
           <div v-if="ticket.status === 'open' || ticket.status === 'in_progress'" class="flex gap-2">
-            <BaseButton size="sm" @click="approveTicket">批准</BaseButton>
+            <BaseButton filled size="sm" @click="approveTicket">批准</BaseButton>
             <BaseButton size="sm" variant="danger" @click="rejectTicket">拒绝</BaseButton>
           </div>
           <div v-else-if="ticket.permissionRequest.executionStatus" class="text-xs text-slate-500">

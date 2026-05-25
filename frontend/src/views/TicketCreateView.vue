@@ -67,7 +67,7 @@ async function submit() {
 
 <template>
   <div class="max-w-2xl mx-auto space-y-6">
-    <h1 class="text-xl font-bold text-slate-900 dark:text-white">新建议题</h1>
+    <h1 class="text-3xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-4xl">新建议题</h1>
 
     <!-- Type selection -->
     <div v-if="!selectedType" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -75,9 +75,9 @@ async function submit() {
         v-for="t in types"
         :key="t.key"
         @click="selectedType = t.key"
-        class="flex items-start gap-3 p-4 rounded-lg border border-slate-200 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors text-left"
+        class="flex items-center gap-3 p-4 rounded-xl border border-slate-200/80 dark:border-slate-800/80 bg-white/70 dark:bg-slate-900/70 backdrop-blur hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50/80 dark:hover:bg-slate-800/20 transition text-left"
       >
-        <Icon :icon="t.icon" class="w-5 h-5 text-slate-600 dark:text-slate-400 mt-0.5" />
+        <Icon :icon="t.icon" class="w-5 h-5 text-slate-600 dark:text-slate-400 shrink-0" />
         <div>
           <div class="font-medium text-slate-900 dark:text-white text-sm">{{ t.label }}</div>
           <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{{ t.desc }}</div>
@@ -111,7 +111,7 @@ async function submit() {
           />
           <label
             for="file-upload"
-            class="inline-flex items-center gap-1.5 px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition-colors"
+            class="inline-flex items-center gap-1.5 px-3 py-2 text-sm rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 cursor-pointer transition"
           >
             <Icon icon="lucide:paperclip" class="w-4 h-4" />
             上传文件
@@ -121,7 +121,7 @@ async function submit() {
           <div
             v-for="(file, idx) in files"
             :key="idx"
-            class="flex items-center justify-between px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-sm"
+            class="flex items-center justify-between px-3 py-2 rounded-md bg-slate-50 dark:bg-slate-900/50 border border-slate-200/80 dark:border-slate-800/80 text-sm"
           >
             <div class="flex items-center gap-2 min-w-0">
               <Icon icon="lucide:file" class="w-4 h-4 text-slate-400 shrink-0" />
@@ -139,11 +139,11 @@ async function submit() {
         </div>
       </div>
 
-      <p v-if="error" class="text-sm text-red-500">{{ error }}</p>
+      <p v-if="error" class="text-sm text-red-500 dark:text-red-400">{{ error }}</p>
 
       <div class="flex justify-end gap-2">
-        <BaseButton variant="secondary" type="button" @click="router.back()">取消</BaseButton>
-        <BaseButton type="submit" :loading="loading" :disabled="!title.trim()">提交议题</BaseButton>
+        <BaseButton type="button" @click="router.back()">取消</BaseButton>
+        <BaseButton filled type="submit" :loading="loading" :disabled="!title.trim()">提交议题</BaseButton>
       </div>
     </form>
   </div>

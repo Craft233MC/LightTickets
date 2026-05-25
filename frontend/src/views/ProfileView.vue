@@ -29,11 +29,11 @@ async function linkMc() {
 
 <template>
   <div class="max-w-2xl mx-auto space-y-8">
-    <h1 class="text-xl font-bold text-slate-900 dark:text-white">个人资料</h1>
+    <h1 class="text-3xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-4xl">个人资料</h1>
 
     <!-- Account info -->
-    <section class="p-5 rounded-lg border border-slate-200 dark:border-slate-700 space-y-4">
-      <h2 class="text-sm font-semibold text-slate-700 dark:text-slate-300">账号信息</h2>
+    <section class="px-6 py-5 rounded-xl border border-slate-200/80 dark:border-slate-800/80 bg-white/70 dark:bg-slate-900/70 backdrop-blur space-y-4">
+      <h2 class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">账号信息</h2>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
         <div>
           <span class="text-slate-500 dark:text-slate-400">用户名</span>
@@ -51,8 +51,8 @@ async function linkMc() {
     </section>
 
     <!-- MC binding -->
-    <section class="p-5 rounded-lg border border-slate-200 dark:border-slate-700 space-y-4">
-      <h2 class="text-sm font-semibold text-slate-700 dark:text-slate-300">Minecraft 绑定</h2>
+    <section class="px-6 py-5 rounded-xl border border-slate-200/80 dark:border-slate-800/80 bg-white/70 dark:bg-slate-900/70 backdrop-blur space-y-4">
+      <h2 class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Minecraft 绑定</h2>
 
       <div v-if="auth.user?.minecraftName" class="flex items-center gap-3">
         <Icon icon="lucide:gamepad-2" class="w-5 h-5 text-green-500" />
@@ -64,7 +64,7 @@ async function linkMc() {
 
       <div v-else class="space-y-3">
         <p class="text-sm text-slate-500 dark:text-slate-400">
-          在游戏中输入 <code class="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs">/bindweb</code> 获取验证码
+          在游戏中输入 <code class="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded-md text-xs">/bindweb</code> 获取验证码
         </p>
         <form @submit.prevent="linkMc" class="flex gap-2">
           <BaseInput v-model="mcCode" placeholder="6位验证码" class="flex-1" />
