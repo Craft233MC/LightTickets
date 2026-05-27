@@ -1,6 +1,7 @@
 import { PrismaClient, TicketStatus, TicketType, Priority } from '@prisma/client';
 import { NotFoundError, ForbiddenError } from '../utils/errors.js';
 import * as auditService from './audit.service.js';
+import { emitTicketUpdate } from '../socket/events.js';
 
 const prisma = new PrismaClient();
 
@@ -95,7 +96,13 @@ export async function update(
   userRole: string,
   data: { status?: TicketStatus; priority?: Priority; assigneeId?: string },
 ) {
-  const ticket = await prisma.ticket.findUnique({ where: { id } });
+  const ticket = await prisma.ticket.findUnique({
+    where: { id },
+    include: {
+      author: { select: { id: true, username: true, minecraftName: true, minecraftUuid: true } },
+      server: { select: { id: true } },
+    },
+  });
   if (!ticket) throw new NotFoundError('议题不存在');
 
   const isAuthor = ticket.authorId === userId;
@@ -120,6 +127,14 @@ export async function update(
 
   if (data.status && data.status !== ticket.status) {
     await auditService.create(id, userId, 'status_change', ticket.status, data.status);
+    if (ticket.serverId && ticket.author?.minecraftUuid) {
+      emitTicketUpdate(ticket.serverId, 'ticket:status_changed', {
+        ticketId: ticket.id,
+        playerUuid: ticket.author.minecraftUuid,
+        oldStatus: ticket.status,
+        newStatus: data.status,
+      });
+    }
   }
   if (data.assigneeId && data.assigneeId !== ticket.assigneeId) {
     await auditService.create(id, userId, 'assign', ticket.assigneeId || 'unassigned', data.assigneeId);
