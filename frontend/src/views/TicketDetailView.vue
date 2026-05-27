@@ -15,20 +15,29 @@ import BaseTextarea from '@/components/base/BaseTextarea.vue'
 import MarkdownRenderer from '@/components/markdown/MarkdownRenderer.vue'
 import TicketLabels from '@/components/tickets/TicketLabels.vue'
 import TicketAuditLog from '@/components/tickets/TicketAuditLog.vue'
-import type { Comment, TicketStatus, TicketType, Priority } from '@/types/ticket'
+import type { Comment, TicketStatus, Priority } from '@/types/ticket'
+import { apiGetTemplates } from '@/api/tickets'
 
-const typeLabels: Record<TicketType, string> = {
-  bug_report: 'Bug 报告',
-  permission_request: '权限申请',
-  suggestion: '建议',
-  report: '举报',
-}
+const templateMap = ref<Record<string, string>>({})
 
 const priorityLabels: Record<Priority, string> = {
   low: '低',
   medium: '中',
   high: '高',
   critical: '紧急',
+}
+
+async function fetchTemplateNames() {
+  try {
+    const list = await apiGetTemplates()
+    for (const t of list) {
+      templateMap.value[t.name] = t.name_i18n
+    }
+  } catch { /* ignore */ }
+}
+
+function templateName(template: string): string {
+  return templateMap.value[template] || template
 }
 
 const route = useRoute()
@@ -99,6 +108,7 @@ async function rejectTicket() {
 }
 
 onMounted(async () => {
+  fetchTemplateNames()
   await Promise.all([store.fetchDetail(id), fetchComments()])
 })
 
@@ -200,7 +210,7 @@ usePolling(async () => {
         <div class="px-6 py-5 rounded-xl border border-slate-200/80 dark:border-slate-800/80 bg-white/70 dark:bg-slate-900/70 backdrop-blur space-y-3 text-sm">
           <div class="flex justify-between">
             <span class="text-slate-500 dark:text-slate-400">类型</span>
-            <span class="text-slate-700 dark:text-slate-300">{{ typeLabels[ticket.type] }}</span>
+            <span class="text-slate-700 dark:text-slate-300">{{ templateName(ticket.template) }}</span>
           </div>
           <div class="flex justify-between">
             <span class="text-slate-500 dark:text-slate-400">优先级</span>
@@ -225,7 +235,7 @@ usePolling(async () => {
         </div>
 
         <!-- Permission request actions -->
-        <div v-if="ticket.type === 'permission_request' && ticket.permissionRequest && auth.isStaff" class="px-6 py-5 rounded-xl border border-slate-200/80 dark:border-slate-800/80 bg-white/70 dark:bg-slate-900/70 backdrop-blur space-y-3">
+        <div v-if="ticket.template === 'permission_request' && ticket.permissionRequest && auth.isStaff" class="px-6 py-5 rounded-xl border border-slate-200/80 dark:border-slate-800/80 bg-white/70 dark:bg-slate-900/70 backdrop-blur space-y-3">
           <h3 class="text-xs font-semibold tracking-[0.18em] uppercase text-slate-500 dark:text-slate-400">权限操作</h3>
           <div class="text-sm text-slate-600 dark:text-slate-400">
             <span v-if="ticket.permissionRequest.groupName">组: {{ ticket.permissionRequest.groupName }}</span>
