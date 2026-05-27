@@ -13,13 +13,6 @@ enum Role {
   admin
 }
 
-enum TicketType {
-  bug_report
-  permission_request
-  suggestion
-  report
-}
-
 enum TicketStatus {
   open
   in_progress
@@ -84,7 +77,8 @@ model Ticket {
   id         Int          @id @default(autoincrement())
   title      String
   body       String
-  type       TicketType
+  template   String
+  formData   String?      @map("form_data")
   status     TicketStatus @default(open)
   priority   Priority     @default(medium)
   authorId   String       @map("author_id")
