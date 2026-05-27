@@ -199,20 +199,36 @@ export function toAdminEditorResponse(row: {
   completionHooks: string; enabled: boolean;
   createdAt: Date; updatedAt: Date;
 }) {
-  let bodyPretty = '';
-  let hooksPretty = '';
-  try { bodyPretty = JSON.stringify(JSON.parse(row.body), null, 2); } catch { bodyPretty = row.body; }
-  try { hooksPretty = JSON.stringify(JSON.parse(row.completionHooks), null, 2); } catch { hooksPretty = row.completionHooks; }
-  return { ...row, body: bodyPretty, completionHooks: hooksPretty };
+  let bodyYaml = '';
+  let hooksYaml = '';
+  try { bodyYaml = yaml.dump(JSON.parse(row.body), { lineWidth: -1, noRefs: true }); } catch { bodyYaml = row.body; }
+  try { hooksYaml = yaml.dump(JSON.parse(row.completionHooks), { lineWidth: -1, noRefs: true }); } catch { hooksYaml = row.completionHooks; }
+  return { ...row, body: bodyYaml, completionHooks: hooksYaml };
 }
 
-function validateJson(jsonStr: string, fieldName: string): string {
+function parseYamlField(yamlStr: string, fieldName: string): string {
   try {
-    const parsed = JSON.parse(jsonStr);
+    const parsed = yaml.load(yamlStr);
     return JSON.stringify(parsed);
   } catch {
-    throw new ValidationError(`${fieldName} 字段不是有效的 JSON`);
+    throw new ValidationError(`${fieldName} 字段不是有效的 YAML`);
   }
+}
+
+function writeTemplateFile(name: string, nameI18n: string, description: string, titlePrefix: string | null, labels: string, bodyYaml: string, hooksYaml: string): void {
+  const bodyParsed = yaml.load(bodyYaml);
+  const hooksParsed = yaml.load(hooksYaml || '[]');
+  const template: Record<string, unknown> = {
+    name: nameI18n,
+    description,
+  };
+  if (titlePrefix) template.title_prefix = titlePrefix;
+  const labelsArr = JSON.parse(labels || '[]');
+  if (labelsArr.length > 0) template.labels = labelsArr;
+  template.body = bodyParsed;
+  template.completion_hooks = hooksParsed;
+  const content = yaml.dump(template, { lineWidth: -1, noRefs: true });
+  fs.writeFileSync(path.join(templatesDir, `${name}.yml`), content, 'utf-8');
 }
 
 export async function adminCreate(data: {
@@ -223,6 +239,9 @@ export async function adminCreate(data: {
   const existing = await prisma.ticketTemplate.findUnique({ where: { name: data.name } });
   if (existing) throw new AppError(409, '模板 key 已存在');
 
+  const bodyJson = parseYamlField(data.body, 'body');
+  const hooksJson = data.completionHooks ? parseYamlField(data.completionHooks, 'completionHooks') : '[]';
+
   const row = await prisma.ticketTemplate.create({
     data: {
       name: data.name,
@@ -230,12 +249,13 @@ export async function adminCreate(data: {
       description: data.description,
       titlePrefix: data.titlePrefix ?? null,
       labels: data.labels || '[]',
-      body: validateJson(data.body, 'body'),
-      completionHooks: data.completionHooks ? validateJson(data.completionHooks, 'completionHooks') : '[]',
+      body: bodyJson,
+      completionHooks: hooksJson,
       enabled: data.enabled ?? true,
     },
   });
   await initTemplates();
+  writeTemplateFile(data.name, data.nameI18n, data.description, data.titlePrefix ?? null, data.labels || '[]', data.body, data.completionHooks || '[]');
   return row;
 }
 
@@ -252,15 +272,25 @@ export async function adminUpdate(id: number, data: {
   if (data.titlePrefix !== undefined) updateData.titlePrefix = data.titlePrefix || null;
   if (data.labels !== undefined) updateData.labels = data.labels;
   if (data.enabled !== undefined) updateData.enabled = data.enabled;
-  if (data.body !== undefined) updateData.body = validateJson(data.body, 'body');
-  if (data.completionHooks !== undefined) updateData.completionHooks = validateJson(data.completionHooks, 'completionHooks');
+  if (data.body !== undefined) updateData.body = parseYamlField(data.body, 'body');
+  if (data.completionHooks !== undefined) updateData.completionHooks = parseYamlField(data.completionHooks, 'completionHooks');
 
   const row = await prisma.ticketTemplate.update({ where: { id }, data: updateData });
   await initTemplates();
+
+  // Sync back to local YAML file — use updated values where provided, fall back to existing
+  const bodyYaml = data.body ?? toAdminEditorResponse(row).body;
+  const hooksYaml = data.completionHooks ?? toAdminEditorResponse(row).completionHooks;
+  writeTemplateFile(row.name, row.nameI18n, row.description, row.titlePrefix, row.labels, bodyYaml, hooksYaml);
+
   return row;
 }
 
 export async function adminDelete(id: number): Promise<void> {
+  const existing = await prisma.ticketTemplate.findUnique({ where: { id } });
+  if (!existing) throw new NotFoundError('模板不存在');
   await prisma.ticketTemplate.delete({ where: { id } });
+  const filePath = path.join(templatesDir, `${existing.name}.yml`);
+  if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
   await initTemplates();
 }
