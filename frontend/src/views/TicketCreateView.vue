@@ -1,31 +1,39 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { Icon } from '@iconify/vue'
 import { apiCreateTicket } from '@/api/tickets'
 import { apiUploadAttachment } from '@/api/attachments'
 import { useUiStore } from '@/stores/ui'
+import { useTicketForm } from '@/composables/useTicketForm'
 import BaseInput from '@/components/base/BaseInput.vue'
 import BaseTextarea from '@/components/base/BaseTextarea.vue'
 import BaseButton from '@/components/base/BaseButton.vue'
-import type { TicketType } from '@/types/ticket'
+import MarkdownRenderer from '@/components/markdown/MarkdownRenderer.vue'
 
 const router = useRouter()
 const ui = useUiStore()
+const {
+  step,
+  templates,
+  selectedTemplate,
+  selectedTemplateName,
+  formValues,
+  title,
+  allFieldsValid,
+  currentTemplateSummary,
+  fetchTemplates,
+  selectTemplate,
+  setFieldValue,
+  setCheckboxValue,
+  goToStep,
+} = useTicketForm()
 
-const types: { key: TicketType; label: string; icon: string; desc: string }[] = [
-  { key: 'bug_report', label: 'Bug 报告', icon: 'lucide:bug', desc: '报告游戏中的问题' },
-  { key: 'permission_request', label: '权限申请', icon: 'lucide:shield', desc: '申请权限组或节点' },
-  { key: 'suggestion', label: '建议', icon: 'lucide:lightbulb', desc: '提出改进建议' },
-  { key: 'report', label: '举报', icon: 'lucide:flag', desc: '举报违规玩家' },
-]
-
-const selectedType = ref<TicketType | null>(null)
-const title = ref('')
-const body = ref('')
 const files = ref<File[]>([])
 const loading = ref(false)
 const error = ref('')
+
+onMounted(fetchTemplates)
 
 function onFileChange(e: Event) {
   const input = e.target as HTMLInputElement
@@ -40,21 +48,18 @@ function removeFile(index: number) {
 }
 
 async function submit() {
-  if (!selectedType.value || !title.value.trim()) return
+  if (!selectedTemplateName.value || !title.value.trim()) return
   error.value = ''
   loading.value = true
   try {
     const ticket = await apiCreateTicket({
       title: title.value.trim(),
-      body: body.value,
-      type: selectedType.value,
+      template: selectedTemplateName.value,
+      formData: formValues.value,
     })
-
-    // Upload attachments after ticket creation
     if (files.value.length > 0) {
       await Promise.all(files.value.map(file => apiUploadAttachment(ticket.id, file)))
     }
-
     ui.toast('议题已创建', 'success')
     router.push(`/tickets/${ticket.id}`)
   } catch (e: any) {
@@ -69,33 +74,112 @@ async function submit() {
   <div class="max-w-2xl mx-auto space-y-6">
     <h1 class="text-3xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-4xl">新建议题</h1>
 
-    <!-- Type selection -->
-    <div v-if="!selectedType" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+    <!-- Step 1: Template Picker -->
+    <div v-if="step === 1" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
       <button
-        v-for="t in types"
-        :key="t.key"
-        @click="selectedType = t.key"
+        v-for="t in templates"
+        :key="t.name"
+        @click="selectTemplate(t.name)"
         class="flex items-center gap-3 p-4 rounded-xl border border-slate-200/80 dark:border-slate-800/80 bg-white/70 dark:bg-slate-900/70 backdrop-blur hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50/80 dark:hover:bg-slate-800/20 transition text-left"
       >
-        <Icon :icon="t.icon" class="w-5 h-5 text-slate-600 dark:text-slate-400 shrink-0" />
         <div>
-          <div class="font-medium text-slate-900 dark:text-white text-sm">{{ t.label }}</div>
-          <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{{ t.desc }}</div>
+          <div class="font-medium text-slate-900 dark:text-white text-sm">{{ t.name_i18n }}</div>
+          <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{{ t.description }}</div>
         </div>
       </button>
     </div>
 
-    <!-- Form -->
-    <form v-else @submit.prevent="submit" class="space-y-4">
+    <!-- Step 2: Template Form -->
+    <form v-else-if="step === 2 && selectedTemplate" @submit.prevent="goToStep(3)" class="space-y-4">
       <div class="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-        <button type="button" @click="selectedType = null" class="hover:text-slate-700 dark:hover:text-slate-300">
+        <button type="button" @click="goToStep(1)" class="hover:text-slate-700 dark:hover:text-slate-300">
           <Icon icon="lucide:arrow-left" class="w-4 h-4" />
         </button>
-        <span>{{ types.find(t => t.key === selectedType)?.label }}</span>
+        <span>{{ currentTemplateSummary?.name_i18n }}</span>
+      </div>
+
+      <div v-for="field in selectedTemplate.body" :key="field.id || field.attributes.label">
+        <!-- markdown -->
+        <div v-if="field.type === 'markdown'" class="prose prose-sm dark:prose-invert max-w-none text-slate-600 dark:text-slate-400">
+          <MarkdownRenderer :content="field.attributes.value || ''" />
+        </div>
+
+        <!-- input -->
+        <BaseInput
+          v-else-if="field.type === 'input'"
+          :model-value="formValues[field.id || ''] || ''"
+          @update:model-value="setFieldValue(field.id || '', $event || '')"
+          :label="field.attributes.label || ''"
+          :placeholder="field.attributes.placeholder"
+        />
+
+        <!-- textarea -->
+        <BaseTextarea
+          v-else-if="field.type === 'textarea'"
+          :model-value="formValues[field.id || ''] || ''"
+          @update:model-value="setFieldValue(field.id || '', $event || '')"
+          :label="field.attributes.label || ''"
+          :placeholder="field.attributes.placeholder"
+          :rows="6"
+        />
+
+        <!-- checkboxes -->
+        <fieldset v-else-if="field.type === 'checkboxes'" class="space-y-2">
+          <legend class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+            {{ field.attributes.label }}
+          </legend>
+          <label
+            v-for="option in field.attributes.options"
+            :key="typeof option === 'string' ? option : option.label"
+            class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 cursor-pointer"
+          >
+            <input
+              type="checkbox"
+              class="rounded border-slate-300 dark:border-slate-600"
+              :checked="(formValues[field.id || ''] || '').split(',').includes(typeof option === 'string' ? option : option.label)"
+              @change="setCheckboxValue(field.id || '', typeof option === 'string' ? option : option.label, ($event.target as HTMLInputElement).checked)"
+            />
+            {{ typeof option === 'string' ? option : option.label }}
+          </label>
+        </fieldset>
+
+        <!-- dropdown -->
+        <div v-else-if="field.type === 'dropdown'" class="space-y-1">
+          <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">
+            {{ field.attributes.label }}
+          </label>
+          <select
+            :value="formValues[field.id || ''] || ''"
+            @change="setFieldValue(field.id || '', ($event.target as HTMLSelectElement).value)"
+            class="w-full px-3 py-2 text-sm rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-900/20 focus:border-slate-400 transition"
+          >
+            <option value="" disabled>请选择...</option>
+            <option
+              v-for="opt in field.attributes.options"
+              :key="typeof opt === 'string' ? opt : opt.toString()"
+              :value="typeof opt === 'string' ? opt : opt.toString()"
+            >
+              {{ typeof opt === 'string' ? opt : opt.toString() }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <div class="flex justify-end">
+        <BaseButton filled type="submit" :disabled="!allFieldsValid">下一步</BaseButton>
+      </div>
+    </form>
+
+    <!-- Step 3: Title + Attachments -->
+    <form v-else-if="step === 3" @submit.prevent="submit" class="space-y-4">
+      <div class="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+        <button type="button" @click="goToStep(2)" class="hover:text-slate-700 dark:hover:text-slate-300">
+          <Icon icon="lucide:arrow-left" class="w-4 h-4" />
+        </button>
+        <span>{{ currentTemplateSummary?.name_i18n }}</span>
       </div>
 
       <BaseInput v-model="title" label="标题" placeholder="简要描述问题" />
-      <BaseTextarea v-model="body" label="详细描述" placeholder="支持 Markdown 格式" :rows="8" />
 
       <!-- Attachment upload -->
       <div class="space-y-2">
