@@ -1,7 +1,7 @@
 import { PrismaClient, TicketStatus, Priority } from '@prisma/client';
 import { NotFoundError, ForbiddenError } from '../utils/errors.js';
 import * as auditService from './audit.service.js';
-import { emitTicketUpdate } from '../socket/events.js';
+import { emitTicketUpdate, emitHookExecute } from '../socket/events.js';
 
 const prisma = new PrismaClient();
 
@@ -136,6 +136,16 @@ export async function update(
         oldStatus: ticket.status,
         newStatus: data.status,
       });
+    }
+    // Emit completion hooks if template has hooks for this status
+    if (ticket.serverId) {
+      const updatedTicket = await prisma.ticket.findUnique({
+        where: { id },
+        include: { author: { select: { minecraftUuid: true, minecraftName: true } } },
+      });
+      if (updatedTicket) {
+        emitHookExecute(ticket.serverId, updatedTicket, data.status);
+      }
     }
   }
   if (data.assigneeId && data.assigneeId !== ticket.assigneeId) {
