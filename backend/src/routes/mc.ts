@@ -23,7 +23,8 @@ const mcTicketSchema = z.object({
   minecraftUuid: z.string(),
   title: z.string().min(1).max(200),
   body: z.string().min(1),
-  type: z.enum(['bug_report', 'permission_request', 'suggestion', 'report']),
+  template: z.string().min(1),
+  formData: z.record(z.string(), z.string()).optional(),
   context: z.object({
     world: z.string().optional(),
     x: z.number().optional(),
@@ -69,7 +70,8 @@ router.post('/tickets', async (req: Request, res: Response) => {
   const ticket = await ticketService.create({
     title: parsed.data.title,
     body,
-    type: parsed.data.type as any,
+    template: parsed.data.template,
+    formData: parsed.data.formData || {},
     authorId: user.id,
     serverId: req.server!.id,
   });

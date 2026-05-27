@@ -6,6 +6,7 @@ import * as permissionService from '../services/permission.service.js';
 import { authMiddleware, conditionalAuthMiddleware } from '../middleware/auth.js';
 import { requireRole } from '../middleware/role.js';
 import { ValidationError } from '../utils/errors.js';
+import { getDefinition, renderBody } from '../services/template.service.js';
 
 const router = Router();
 
@@ -17,8 +18,8 @@ function parseId(raw: string): number {
 
 const createSchema = z.object({
   title: z.string().min(1).max(200),
-  body: z.string().min(1),
-  type: z.enum(['bug_report', 'permission_request', 'suggestion', 'report']),
+  template: z.string().min(1),
+  formData: z.record(z.string(), z.string()),
   priority: z.enum(['low', 'medium', 'high', 'critical']).optional(),
   serverId: z.string().optional(),
 });
@@ -27,7 +28,21 @@ router.post('/', authMiddleware, async (req: Request, res: Response) => {
   const parsed = createSchema.safeParse(req.body);
   if (!parsed.success) throw new ValidationError(parsed.error.issues[0].message);
 
-  const ticket = await ticketService.create({ ...parsed.data, authorId: req.user!.userId });
+  const { template, formData, title: userTitle, ...rest } = parsed.data;
+  const def = getDefinition(template);
+  if (!def) throw new ValidationError('无效的模板');
+
+  const body = renderBody(def, formData);
+  const title = def.title_prefix ? def.title_prefix + userTitle : userTitle;
+
+  const ticket = await ticketService.create({
+    ...rest,
+    title,
+    body,
+    template,
+    formData,
+    authorId: req.user!.userId,
+  });
   res.status(201).json(ticket);
 });
 

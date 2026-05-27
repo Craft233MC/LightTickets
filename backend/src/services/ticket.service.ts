@@ -1,4 +1,4 @@
-import { PrismaClient, TicketStatus, TicketType, Priority } from '@prisma/client';
+import { PrismaClient, TicketStatus, Priority } from '@prisma/client';
 import { NotFoundError, ForbiddenError } from '../utils/errors.js';
 import * as auditService from './audit.service.js';
 import { emitTicketUpdate } from '../socket/events.js';
@@ -8,7 +8,8 @@ const prisma = new PrismaClient();
 interface CreateTicketInput {
   title: string;
   body: string;
-  type: TicketType;
+  template: string;
+  formData?: Record<string, string>;
   priority?: Priority;
   serverId?: string;
   authorId: string;
@@ -18,7 +19,7 @@ interface ListTicketsInput {
   page?: number;
   pageSize?: number;
   status?: TicketStatus;
-  type?: TicketType;
+  type?: string;
   authorId?: string;
   serverId?: string;
   labelId?: string;
@@ -30,7 +31,8 @@ export async function create(input: CreateTicketInput) {
     data: {
       title: input.title,
       body: input.body,
-      type: input.type,
+      template: input.template,
+      formData: input.formData ? JSON.stringify(input.formData) : null,
       priority: input.priority || 'medium',
       authorId: input.authorId,
       serverId: input.serverId,
@@ -48,7 +50,7 @@ export async function list(input: ListTicketsInput) {
   const where: any = {};
 
   if (input.status) where.status = input.status;
-  if (input.type) where.type = input.type;
+  if (input.type) where.template = input.type;
   if (input.authorId) where.authorId = input.authorId;
   if (input.serverId) where.serverId = input.serverId;
   if (input.labelId) where.labels = { some: { labelId: input.labelId } };

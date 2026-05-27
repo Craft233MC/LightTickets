@@ -11,7 +11,7 @@ export async function approve(ticketId: number, actorId: string) {
   });
 
   if (!ticket) throw new NotFoundError('议题不存在');
-  if (ticket.type !== 'permission_request') throw new ValidationError('该议题不是权限申请类型');
+  if (ticket.template !== 'permission_request') throw new ValidationError('该议题不是权限申请类型');
   if (!ticket.permissionRequest) throw new ValidationError('该权限申请缺少必要数据');
 
   const updated = await prisma.ticket.update({
@@ -43,7 +43,7 @@ export async function reject(ticketId: number, actorId: string, reason?: string)
   });
 
   if (!ticket) throw new NotFoundError('议题不存在');
-  if (ticket.type !== 'permission_request') throw new ValidationError('该议题不是权限申请类型');
+  if (ticket.template !== 'permission_request') throw new ValidationError('该议题不是权限申请类型');
 
   const updated = await prisma.ticket.update({
     where: { id: ticketId },
