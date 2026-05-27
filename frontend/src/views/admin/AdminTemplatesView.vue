@@ -7,6 +7,7 @@ import BaseButton from '@/components/base/BaseButton.vue'
 import BaseInput from '@/components/base/BaseInput.vue'
 import BaseModal from '@/components/base/BaseModal.vue'
 import type { AdminTemplate } from '@/api/templates'
+import { apiGetAdminTemplate } from '@/api/templates'
 
 const templates = useTemplatesStore()
 const ui = useUiStore()
@@ -30,17 +31,18 @@ function openCreate() {
   showModal.value = true
 }
 
-function openEdit(tmpl: AdminTemplate) {
-  editingId.value = tmpl.id
+async function openEdit(tmpl: AdminTemplate) {
+  const full = await apiGetAdminTemplate(tmpl.id)
+  editingId.value = full.id
   form.value = {
-    name: tmpl.name,
-    nameI18n: tmpl.nameI18n,
-    description: tmpl.description,
-    titlePrefix: tmpl.titlePrefix || '',
-    labels: tmpl.labels,
-    body: tmpl.body,
-    completionHooks: tmpl.completionHooks,
-    enabled: tmpl.enabled,
+    name: full.name,
+    nameI18n: full.nameI18n,
+    description: full.description,
+    titlePrefix: full.titlePrefix || '',
+    labels: full.labels,
+    body: full.body,
+    completionHooks: full.completionHooks,
+    enabled: full.enabled,
   }
   showModal.value = true
 }
