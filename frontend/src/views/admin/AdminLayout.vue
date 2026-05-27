@@ -7,6 +7,7 @@ const route = useRoute()
 const navItems = [
   { to: '/admin/labels', label: '标签', icon: 'lucide:tag' },
   { to: '/admin/servers', label: '服务器', icon: 'lucide:server' },
+  { to: '/admin/templates', label: '模板', icon: 'lucide:layout-template' },
   { to: '/admin/users', label: '用户', icon: 'lucide:users' },
   { to: '/admin/settings', label: '设置', icon: 'lucide:settings' },
 ]

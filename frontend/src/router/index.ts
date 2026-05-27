@@ -68,6 +68,7 @@ const router = createRouter({
         { path: '', redirect: '/admin/labels' },
         { path: 'labels', name: 'admin-labels', component: () => import('@/views/admin/AdminLabelsView.vue') },
         { path: 'servers', name: 'admin-servers', component: () => import('@/views/admin/AdminServersView.vue') },
+        { path: 'templates', name: 'admin-templates', component: () => import('@/views/admin/AdminTemplatesView.vue') },
         { path: 'users', name: 'admin-users', component: () => import('@/views/admin/AdminUsersView.vue') },
         { path: 'settings', name: 'admin-settings', component: () => import('@/views/admin/AdminSettingsView.vue') },
       ],
