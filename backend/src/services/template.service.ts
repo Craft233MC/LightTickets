@@ -1,6 +1,13 @@
 import fs from 'fs';
 import path from 'path';
 import yaml from 'js-yaml';
+import { PrismaClient } from '@prisma/client';
+import { NotFoundError, AppError, ValidationError } from '../utils/errors.js';
+
+const prisma = new PrismaClient();
+const templatesDir = path.resolve('templates');
+
+// --- Types (unchanged) ---
 
 export interface TemplateField {
   type: 'markdown' | 'input' | 'textarea' | 'checkboxes' | 'dropdown';
@@ -36,13 +43,41 @@ export interface TemplateSummary {
   labels: string[];
 }
 
-const templatesDir = path.resolve('templates');
-const cache = new Map<string, TemplateDefinition>();
+interface CachedTemplate {
+  id: number;
+  enabled: boolean;
+  definition: TemplateDefinition;
+}
 
-export function loadTemplates(): void {
+const cache = new Map<string, CachedTemplate>();
+
+// --- Init (replaces loadTemplates) ---
+
+export async function initTemplates(): Promise<void> {
   cache.clear();
+  const rows = await prisma.ticketTemplate.findMany();
+  for (const row of rows) {
+    cache.set(row.name, {
+      id: row.id,
+      enabled: row.enabled,
+      definition: {
+        name: row.nameI18n,
+        description: row.description,
+        title_prefix: row.titlePrefix ?? undefined,
+        labels: JSON.parse(row.labels),
+        body: JSON.parse(row.body),
+        completion_hooks: JSON.parse(row.completionHooks),
+      },
+    });
+  }
+  console.log(`[templates] loaded ${cache.size} templates from database`);
+}
+
+// --- Seed from YAML files (called during setup) ---
+
+export async function seedTemplatesFromFiles(): Promise<void> {
   if (!fs.existsSync(templatesDir)) {
-    console.warn('[templates] templates/ directory not found, skipping');
+    console.warn('[templates] templates/ directory not found, skipping seed');
     return;
   }
   const files = fs.readdirSync(templatesDir).filter(f => f.endsWith('.yml') || f.endsWith('.yaml'));
@@ -51,29 +86,52 @@ export function loadTemplates(): void {
       const raw = fs.readFileSync(path.join(templatesDir, file), 'utf-8');
       const def = yaml.load(raw) as TemplateDefinition;
       if (!def.name || !def.description || !Array.isArray(def.body)) {
-        throw new Error(`Template "${file}" is missing required fields: name, description, or body`);
+        throw new Error(`missing required fields: name, description, or body`);
       }
-      const name = file.replace(/\.ya?ml$/, '');
-      cache.set(name, def);
-      console.log(`[templates] loaded: ${name} (${def.name})`);
+      const nameKey = file.replace(/\.ya?ml$/, '');
+      const existing = await prisma.ticketTemplate.findUnique({ where: { name: nameKey } });
+      if (!existing) {
+        await prisma.ticketTemplate.create({
+          data: {
+            name: nameKey,
+            nameI18n: def.name,
+            description: def.description,
+            titlePrefix: def.title_prefix ?? null,
+            labels: JSON.stringify(def.labels || []),
+            body: JSON.stringify(def.body),
+            completionHooks: JSON.stringify(def.completion_hooks || []),
+            enabled: true,
+          },
+        });
+        console.log(`[templates] seeded: ${nameKey} (${def.name})`);
+      }
     } catch (err) {
-      console.warn(`[templates] skipping malformed template ${file}:`, (err as Error).message);
+      console.warn(`[templates] skipping ${file}:`, (err as Error).message);
     }
   }
+  await initTemplates();
 }
 
+// --- Public read functions (synchronous, from cache) ---
+
 export function list(): TemplateSummary[] {
-  return Array.from(cache.entries()).map(([name, def]) => ({
-    name,
-    name_i18n: def.name,
-    description: def.description,
-    labels: def.labels,
-  }));
+  const result: TemplateSummary[] = [];
+  for (const [name, entry] of cache) {
+    if (!entry.enabled) continue;
+    result.push({
+      name,
+      name_i18n: entry.definition.name,
+      description: entry.definition.description,
+      labels: entry.definition.labels,
+    });
+  }
+  return result;
 }
 
 export function get(name: string): Omit<TemplateDefinition, 'completion_hooks'> | undefined {
-  const def = cache.get(name);
-  if (!def) return undefined;
+  const entry = cache.get(name);
+  if (!entry || !entry.enabled) return undefined;
+  const def = entry.definition;
   return {
     name: def.name,
     description: def.description,
@@ -84,7 +142,8 @@ export function get(name: string): Omit<TemplateDefinition, 'completion_hooks'> 
 }
 
 export function getDefinition(name: string): TemplateDefinition | undefined {
-  return cache.get(name);
+  // No enabled check — hooks must still fire for tickets using now-disabled templates
+  return cache.get(name)?.definition;
 }
 
 export function renderBody(def: TemplateDefinition, formData: Record<string, string>): string {
@@ -109,7 +168,6 @@ export function renderBody(def: TemplateDefinition, formData: Record<string, str
       }
     }
   }
-
   const body = parts.join('\n\n---\n\n');
   return body || 'No content provided';
 }
@@ -118,4 +176,88 @@ export function resolveHooks(def: TemplateDefinition, event: string): string[] {
   return def.completion_hooks
     .filter(h => h.event === event)
     .flatMap(h => h.commands);
+}
+
+// --- Admin CRUD functions (async, from DB) ---
+
+export async function adminList() {
+  return prisma.ticketTemplate.findMany({ orderBy: { name: 'asc' } });
+}
+
+export async function adminGet(id: number) {
+  const row = await prisma.ticketTemplate.findUnique({ where: { id } });
+  if (!row) throw new NotFoundError('模板不存在');
+  return row;
+}
+
+export function toAdminEditorResponse(row: {
+  id: number; name: string; nameI18n: string; description: string;
+  titlePrefix: string | null; labels: string; body: string;
+  completionHooks: string; enabled: boolean;
+  createdAt: Date; updatedAt: Date;
+}) {
+  let bodyYaml = '';
+  let hooksYaml = '';
+  try { bodyYaml = yaml.dump(JSON.parse(row.body)); } catch { bodyYaml = row.body; }
+  try { hooksYaml = yaml.dump(JSON.parse(row.completionHooks)); } catch { hooksYaml = row.completionHooks; }
+  return { ...row, body: bodyYaml, completionHooks: hooksYaml };
+}
+
+function yamlToJson(yamlStr: string, fieldName: string): string {
+  try {
+    const parsed = yaml.load(yamlStr);
+    return JSON.stringify(parsed);
+  } catch {
+    throw new ValidationError(`${fieldName} 字段不是有效的 YAML`);
+  }
+}
+
+export async function adminCreate(data: {
+  name: string; nameI18n: string; description: string;
+  titlePrefix?: string; labels?: string;
+  body: string; completionHooks?: string; enabled?: boolean;
+}) {
+  const existing = await prisma.ticketTemplate.findUnique({ where: { name: data.name } });
+  if (existing) throw new AppError(409, '模板 key 已存在');
+
+  const row = await prisma.ticketTemplate.create({
+    data: {
+      name: data.name,
+      nameI18n: data.nameI18n,
+      description: data.description,
+      titlePrefix: data.titlePrefix ?? null,
+      labels: data.labels || '[]',
+      body: yamlToJson(data.body, 'body'),
+      completionHooks: data.completionHooks ? yamlToJson(data.completionHooks, 'completionHooks') : '[]',
+      enabled: data.enabled ?? true,
+    },
+  });
+  await initTemplates();
+  return row;
+}
+
+export async function adminUpdate(id: number, data: {
+  nameI18n?: string; description?: string; titlePrefix?: string;
+  labels?: string; body?: string; completionHooks?: string; enabled?: boolean;
+}) {
+  const existing = await prisma.ticketTemplate.findUnique({ where: { id } });
+  if (!existing) throw new NotFoundError('模板不存在');
+
+  const updateData: Record<string, unknown> = {};
+  if (data.nameI18n !== undefined) updateData.nameI18n = data.nameI18n;
+  if (data.description !== undefined) updateData.description = data.description;
+  if (data.titlePrefix !== undefined) updateData.titlePrefix = data.titlePrefix || null;
+  if (data.labels !== undefined) updateData.labels = data.labels;
+  if (data.enabled !== undefined) updateData.enabled = data.enabled;
+  if (data.body !== undefined) updateData.body = yamlToJson(data.body, 'body');
+  if (data.completionHooks !== undefined) updateData.completionHooks = yamlToJson(data.completionHooks, 'completionHooks');
+
+  const row = await prisma.ticketTemplate.update({ where: { id }, data: updateData });
+  await initTemplates();
+  return row;
+}
+
+export async function adminDelete(id: number): Promise<void> {
+  await prisma.ticketTemplate.delete({ where: { id } });
+  await initTemplates();
 }

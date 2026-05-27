@@ -14,12 +14,12 @@ import serverRoutes from './routes/servers.js';
 import mcRoutes from './routes/mc.js';
 import auditRoutes from './routes/audit.js';
 import templateRoutes from './routes/templates.js';
-import { loadTemplates } from './services/template.service.js';
+import { initTemplates } from './services/template.service.js';
 
 export function createApp() {
   const app = express();
 
-  loadTemplates();
+  initTemplates();
 
   app.use(cors());
   app.use(express.json());
