@@ -1,15 +1,55 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { apiFetch } from '@/api/client'
 import { useUiStore } from '@/stores/ui'
+import { useAuthStore } from '@/stores/auth'
+import { usePagination } from '@/composables/usePagination'
+import BaseSelect from '@/components/base/BaseSelect.vue'
+import BasePagination from '@/components/base/BasePagination.vue'
 import type { User } from '@/types/user'
 import type { Role } from '@/types/ticket'
 
+interface UsersResponse {
+  users: User[]
+  total: number
+  page: number
+  pageSize: number
+}
+
 const ui = useUiStore()
+const auth = useAuthStore()
 const users = ref<User[]>([])
+const page = ref(1)
+const pageSize = ref(20)
+const total = ref(0)
+
+const { totalPages } = usePagination(
+  () => total.value,
+  () => page.value,
+  () => pageSize.value,
+)
+
+const roleOptions = [
+  { value: 'player', label: 'player' },
+  { value: 'staff', label: 'staff' },
+  { value: 'admin', label: 'admin' },
+]
 
 async function fetchUsers() {
-  users.value = await apiFetch<User[]>('/users')
+  const res = await apiFetch<UsersResponse>(`/users?page=${page.value}&pageSize=${pageSize.value}`)
+  users.value = res.users
+  total.value = res.total
+}
+
+function setPage(p: number) {
+  page.value = p
+  fetchUsers()
+}
+
+function setPageSize(s: number) {
+  pageSize.value = s
+  page.value = 1
+  fetchUsers()
 }
 
 async function changeRole(userId: string, role: Role) {
@@ -26,6 +66,22 @@ async function changeRole(userId: string, role: Role) {
   }
 }
 
+async function deleteUser(userId: string) {
+  if (!confirm('确定要删除该用户吗？此操作不可撤销。')) return
+  try {
+    await apiFetch(`/users/${userId}`, { method: 'DELETE' })
+    users.value = users.value.filter(u => u.id !== userId)
+    total.value--
+    if (users.value.length === 0 && page.value > 1) {
+      page.value--
+      fetchUsers()
+    }
+    ui.toast('用户已删除', 'success')
+  } catch (e: any) {
+    ui.toast(e.message || '操作失败', 'error')
+  }
+}
+
 onMounted(fetchUsers)
 </script>
 
@@ -33,40 +89,49 @@ onMounted(fetchUsers)
   <div class="space-y-4">
     <h2 class="text-xl font-semibold tracking-tight text-slate-950 dark:text-white">用户管理</h2>
 
-    <div class="overflow-x-auto border border-slate-200/80 dark:border-slate-800/80 rounded-xl">
-      <table class="w-full text-sm">
-        <thead class="bg-slate-50/80 dark:bg-slate-800/50 backdrop-blur-sm">
-          <tr>
-            <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">用户名</th>
-            <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">邮箱</th>
-            <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">MC</th>
-            <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">角色</th>
-            <th class="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">操作</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
-          <tr v-for="user in users" :key="user.id">
-            <td class="px-6 py-4 text-slate-900 dark:text-white font-medium">{{ user.username }}</td>
-            <td class="px-6 py-4 text-slate-600 dark:text-slate-400">{{ user.email }}</td>
-            <td class="px-6 py-4 text-slate-600 dark:text-slate-400">{{ user.minecraftName || '-' }}</td>
-            <td class="px-6 py-4">
-              <select
-                :value="user.role"
-                @change="changeRole(user.id, ($event.target as HTMLSelectElement).value as Role)"
-                class="px-2 py-1 text-xs rounded-md border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-900/80 text-slate-700 dark:text-slate-300 backdrop-blur-sm"
-              >
-                <option value="player">player</option>
-                <option value="staff">staff</option>
-                <option value="admin">admin</option>
-              </select>
-            </td>
-            <td class="px-6 py-4 text-right">
-              <span class="text-xs text-slate-400">{{ user.createdAt?.slice(0, 10) }}</span>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      <div v-if="!users.length" class="px-6 py-8 text-center text-sm text-slate-500 dark:text-slate-400">暂无用户</div>
-    </div>
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b border-slate-200 dark:border-slate-800">
+          <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">用户名</th>
+          <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">邮箱</th>
+          <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">MC</th>
+          <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">角色</th>
+          <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">操作</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100 dark:divide-slate-800/60">
+        <tr v-for="user in users" :key="user.id" class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+          <td class="px-4 py-3 text-slate-900 dark:text-white font-medium">{{ user.username }}</td>
+          <td class="px-4 py-3 text-slate-600 dark:text-slate-400">{{ user.email }}</td>
+          <td class="px-4 py-3 text-slate-600 dark:text-slate-400">{{ user.minecraftName || '-' }}</td>
+          <td class="px-4 py-3 min-w-[120px]">
+            <BaseSelect
+              :model-value="user.role"
+              @update:model-value="changeRole(user.id, $event as Role)"
+              :options="roleOptions"
+            />
+          </td>
+          <td class="px-4 py-3 text-right space-x-3">
+            <button
+              v-if="user.id !== auth.user?.id"
+              @click="deleteUser(user.id)"
+              class="text-xs text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition"
+            >删除</button>
+            <span class="text-xs text-slate-400">{{ user.createdAt?.slice(0, 10) }}</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div v-if="!users.length" class="py-12 text-center text-sm text-slate-500 dark:text-slate-400">暂无用户</div>
+
+    <BasePagination
+      :page="page"
+      :total-pages="totalPages"
+      :total="total"
+      :page-size="pageSize"
+      @update:page="setPage"
+      @update:page-size="setPageSize"
+    />
   </div>
 </template>
