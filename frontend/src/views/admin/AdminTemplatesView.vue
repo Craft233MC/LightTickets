@@ -136,8 +136,8 @@ onMounted(() => {
           启用（在创建议题页面显示）
         </label>
 
-        <BaseTextarea v-model="form.body" label="表单字段 (YAML)" :rows="16" />
-        <BaseTextarea v-model="form.completionHooks" label="完成钩子 (YAML)" :rows="8" />
+        <BaseTextarea v-model="form.body" label="表单字段 (JSON)" :rows="16" />
+        <BaseTextarea v-model="form.completionHooks" label="完成钩子 (JSON)" :rows="8" />
 
         <div class="flex justify-end gap-2">
           <BaseButton type="button" @click="showModal = false">取消</BaseButton>

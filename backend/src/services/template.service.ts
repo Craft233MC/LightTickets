@@ -199,19 +199,19 @@ export function toAdminEditorResponse(row: {
   completionHooks: string; enabled: boolean;
   createdAt: Date; updatedAt: Date;
 }) {
-  let bodyYaml = '';
-  let hooksYaml = '';
-  try { bodyYaml = yaml.dump(JSON.parse(row.body)); } catch { bodyYaml = row.body; }
-  try { hooksYaml = yaml.dump(JSON.parse(row.completionHooks)); } catch { hooksYaml = row.completionHooks; }
-  return { ...row, body: bodyYaml, completionHooks: hooksYaml };
+  let bodyPretty = '';
+  let hooksPretty = '';
+  try { bodyPretty = JSON.stringify(JSON.parse(row.body), null, 2); } catch { bodyPretty = row.body; }
+  try { hooksPretty = JSON.stringify(JSON.parse(row.completionHooks), null, 2); } catch { hooksPretty = row.completionHooks; }
+  return { ...row, body: bodyPretty, completionHooks: hooksPretty };
 }
 
-function yamlToJson(yamlStr: string, fieldName: string): string {
+function validateJson(jsonStr: string, fieldName: string): string {
   try {
-    const parsed = yaml.load(yamlStr);
+    const parsed = JSON.parse(jsonStr);
     return JSON.stringify(parsed);
   } catch {
-    throw new ValidationError(`${fieldName} 字段不是有效的 YAML`);
+    throw new ValidationError(`${fieldName} 字段不是有效的 JSON`);
   }
 }
 
@@ -230,8 +230,8 @@ export async function adminCreate(data: {
       description: data.description,
       titlePrefix: data.titlePrefix ?? null,
       labels: data.labels || '[]',
-      body: yamlToJson(data.body, 'body'),
-      completionHooks: data.completionHooks ? yamlToJson(data.completionHooks, 'completionHooks') : '[]',
+      body: validateJson(data.body, 'body'),
+      completionHooks: data.completionHooks ? validateJson(data.completionHooks, 'completionHooks') : '[]',
       enabled: data.enabled ?? true,
     },
   });
@@ -252,8 +252,8 @@ export async function adminUpdate(id: number, data: {
   if (data.titlePrefix !== undefined) updateData.titlePrefix = data.titlePrefix || null;
   if (data.labels !== undefined) updateData.labels = data.labels;
   if (data.enabled !== undefined) updateData.enabled = data.enabled;
-  if (data.body !== undefined) updateData.body = yamlToJson(data.body, 'body');
-  if (data.completionHooks !== undefined) updateData.completionHooks = yamlToJson(data.completionHooks, 'completionHooks');
+  if (data.body !== undefined) updateData.body = validateJson(data.body, 'body');
+  if (data.completionHooks !== undefined) updateData.completionHooks = validateJson(data.completionHooks, 'completionHooks');
 
   const row = await prisma.ticketTemplate.update({ where: { id }, data: updateData });
   await initTemplates();
