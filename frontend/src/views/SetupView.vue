@@ -125,7 +125,7 @@ async function submit() {
     </div>
     <div class="w-full max-w-xl bg-white/95 dark:bg-slate-900/95 rounded-xl border border-slate-200/80 dark:border-slate-800/80 shadow-sm backdrop-blur p-8">
       <div class="mb-8">
-        <h1 class="text-2xl font-bold tracking-tight text-slate-950 dark:text-white">站点初始化</h1>
+        <h1 class="text-2xl font-bold tracking-tight text-slate-950 dark:text-white">LightTickets初始化向导</h1>
         <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">步骤 {{ step }} / {{ totalSteps }}</p>
         <div class="mt-4 h-1 bg-slate-100 dark:bg-slate-800 rounded overflow-hidden">
           <div
