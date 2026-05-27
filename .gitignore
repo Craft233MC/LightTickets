@@ -4,3 +4,5 @@ dist/
 *.db-journal
 .env
 uploads/
+plugin/build/
+plugin/.gradle/
