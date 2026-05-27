@@ -71,6 +71,9 @@ export async function initTemplates(): Promise<void> {
     });
   }
   console.log(`[templates] loaded ${cache.size} templates from database`);
+  if (cache.size === 0) {
+    await seedTemplatesFromFiles();
+  }
 }
 
 // --- Seed from YAML files (called during setup) ---
