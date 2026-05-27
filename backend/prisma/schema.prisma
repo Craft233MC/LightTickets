@@ -81,7 +81,7 @@ model Server {
 }
 
 model Ticket {
-  id         String       @id @default(cuid())
+  id         Int          @id @default(autoincrement())
   title      String
   body       String
   type       TicketType
@@ -117,7 +117,7 @@ model Label {
 }
 
 model TicketLabel {
-  ticketId String @map("ticket_id")
+  ticketId Int    @map("ticket_id")
   labelId  String @map("label_id")
   ticket   Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
   label    Label  @relation(fields: [labelId], references: [id], onDelete: Cascade)
@@ -128,7 +128,7 @@ model TicketLabel {
 
 model Comment {
   id        String        @id @default(cuid())
-  ticketId  String        @map("ticket_id")
+  ticketId  Int           @map("ticket_id")
   authorId  String        @map("author_id")
   body      String
   source    CommentSource @default(web)
@@ -143,7 +143,7 @@ model Comment {
 
 model Attachment {
   id         String   @id @default(cuid())
-  ticketId   String?  @map("ticket_id")
+  ticketId   Int?     @map("ticket_id")
   commentId  String?  @map("comment_id")
   filename   String
   path       String
@@ -161,7 +161,7 @@ model Attachment {
 
 model PermissionRequest {
   id              String          @id @default(cuid())
-  ticketId        String          @unique @map("ticket_id")
+  ticketId        Int             @unique @map("ticket_id")
   permissionNode  String?         @map("permission_node")
   groupName       String?         @map("group_name")
   executionStatus ExecutionStatus @default(pending) @map("execution_status")
@@ -201,7 +201,7 @@ model SetupStatus {
 
 model AuditLog {
   id        String   @id @default(cuid())
-  ticketId  String   @map("ticket_id")
+  ticketId  Int      @map("ticket_id")
   actorId   String   @map("actor_id")
   action    String
   oldValue  String?  @map("old_value")

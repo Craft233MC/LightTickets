@@ -23,7 +23,7 @@ CREATE TABLE "servers" (
 
 -- CreateTable
 CREATE TABLE "tickets" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "title" TEXT NOT NULL,
     "body" TEXT NOT NULL,
     "type" TEXT NOT NULL,
@@ -50,7 +50,7 @@ CREATE TABLE "labels" (
 
 -- CreateTable
 CREATE TABLE "ticket_labels" (
-    "ticket_id" TEXT NOT NULL,
+    "ticket_id" INTEGER NOT NULL,
     "label_id" TEXT NOT NULL,
 
     PRIMARY KEY ("ticket_id", "label_id"),
@@ -61,7 +61,7 @@ CREATE TABLE "ticket_labels" (
 -- CreateTable
 CREATE TABLE "comments" (
     "id" TEXT NOT NULL PRIMARY KEY,
-    "ticket_id" TEXT NOT NULL,
+    "ticket_id" INTEGER NOT NULL,
     "author_id" TEXT NOT NULL,
     "body" TEXT NOT NULL,
     "source" TEXT NOT NULL DEFAULT 'web',
@@ -73,7 +73,7 @@ CREATE TABLE "comments" (
 -- CreateTable
 CREATE TABLE "attachments" (
     "id" TEXT NOT NULL PRIMARY KEY,
-    "ticket_id" TEXT,
+    "ticket_id" INTEGER,
     "comment_id" TEXT,
     "filename" TEXT NOT NULL,
     "path" TEXT NOT NULL,
@@ -89,7 +89,7 @@ CREATE TABLE "attachments" (
 -- CreateTable
 CREATE TABLE "permission_requests" (
     "id" TEXT NOT NULL PRIMARY KEY,
-    "ticket_id" TEXT NOT NULL,
+    "ticket_id" INTEGER NOT NULL,
     "permission_node" TEXT,
     "group_name" TEXT,
     "execution_status" TEXT NOT NULL DEFAULT 'pending',
@@ -111,9 +111,20 @@ CREATE TABLE "link_codes" (
 );
 
 -- CreateTable
+CREATE TABLE "setup_status" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "is_setup" BOOLEAN NOT NULL DEFAULT false,
+    "site_name" TEXT NOT NULL DEFAULT 'LightTickets',
+    "site_url" TEXT,
+    "require_login" BOOLEAN NOT NULL DEFAULT false,
+    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" DATETIME NOT NULL
+);
+
+-- CreateTable
 CREATE TABLE "audit_logs" (
     "id" TEXT NOT NULL PRIMARY KEY,
-    "ticket_id" TEXT NOT NULL,
+    "ticket_id" INTEGER NOT NULL,
     "actor_id" TEXT NOT NULL,
     "action" TEXT NOT NULL,
     "old_value" TEXT,
