@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, onMounted, computed } from 'vue'
+import { ref, watch, onMounted, computed, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import { Icon } from '@iconify/vue'
 import { useTicketsStore } from '@/stores/tickets'
@@ -52,6 +52,33 @@ const newComment = ref('')
 const submitting = ref(false)
 const commentTextareaRef = ref<InstanceType<typeof BaseTextarea> | null>(null)
 const mdUpload = useMarkdownUpload()
+
+const editingTitle = ref(false)
+const editTitleValue = ref('')
+const titleInputRef = ref<HTMLInputElement | null>(null)
+
+function startEditTitle() {
+  if (!ticket.value) return
+  editTitleValue.value = ticket.value.title
+  editingTitle.value = true
+  nextTick(() => titleInputRef.value?.focus())
+}
+
+async function saveTitle() {
+  if (!ticket.value || !editTitleValue.value.trim()) return
+  try {
+    await store.updateTitle(ticket.value.id, editTitleValue.value.trim())
+    editingTitle.value = false
+    await fetchAuditLogs()
+    ui.toast('标题已更新', 'success')
+  } catch (e: any) {
+    ui.toast(e.message || '操作失败', 'error')
+  }
+}
+
+function cancelEditTitle() {
+  editingTitle.value = false
+}
 
 watch(newComment, (val) => {
   mdUpload.syncPending(val)
@@ -270,7 +297,27 @@ function onCommentFilePaste(e: ClipboardEvent) {
   <div v-else class="space-y-6">
     <!-- Header (full width, like GitHub issue title) -->
     <div>
-      <h1 class="text-3xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-4xl">{{ ticket.title }}</h1>
+      <div v-if="!editingTitle" class="group flex items-center gap-2">
+        <h1 class="text-3xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-4xl">{{ ticket.title }}</h1>
+        <button
+          v-if="ticket.authorId === auth.user?.id || auth.isStaff"
+          class="opacity-0 group-hover:opacity-100 p-1 rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition"
+          @click="startEditTitle"
+        >
+          <Icon icon="lucide:pencil" class="w-4 h-4" />
+        </button>
+      </div>
+      <div v-else class="flex items-center gap-2">
+        <input
+          ref="titleInputRef"
+          v-model="editTitleValue"
+          class="flex-1 text-3xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-4xl bg-transparent border-b-2 border-slate-300 dark:border-slate-600 focus:border-slate-500 dark:focus:border-slate-400 outline-none pb-1"
+          @keydown.enter="saveTitle"
+          @keydown.escape="cancelEditTitle"
+        />
+        <BaseButton size="sm" @click="saveTitle">保存</BaseButton>
+        <BaseButton size="sm" variant="secondary" @click="cancelEditTitle">取消</BaseButton>
+      </div>
       <div class="mt-2 flex items-center gap-3 text-sm text-slate-500 dark:text-slate-400">
         <span>{{ ticket.author.username }}</span>
         <span :title="formatDate(ticket.createdAt)">{{ timeAgo(ticket.createdAt) }}</span>
