@@ -84,6 +84,18 @@ router.patch('/:id/body', authMiddleware, async (req: Request, res: Response) =>
   res.json(ticket);
 });
 
+const updateTitleSchema = z.object({
+  title: z.string().min(1).max(200),
+});
+
+router.patch('/:id/title', authMiddleware, async (req: Request, res: Response) => {
+  const parsed = updateTitleSchema.safeParse(req.body);
+  if (!parsed.success) throw new ValidationError(parsed.error.issues[0].message);
+
+  const ticket = await ticketService.updateTitle(parseId(req.params.id), req.user!.userId, req.user!.role, parsed.data.title);
+  res.json(ticket);
+});
+
 router.post('/:id/close', authMiddleware, async (req: Request, res: Response) => {
   const ticket = await ticketService.closeTicket(parseId(req.params.id), req.user!.userId, req.user!.role);
   res.json(ticket);

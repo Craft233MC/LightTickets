@@ -192,6 +192,34 @@ export async function updateBody(id: number, userId: string, userRole: string, b
   });
 }
 
+export async function updateTitle(id: number, userId: string, userRole: string, title: string) {
+  const ticket = await prisma.ticket.findUnique({
+    where: { id },
+    include: { author: { select: { id: true } } },
+  });
+  if (!ticket) throw new NotFoundError('议题不存在');
+
+  const isAuthor = ticket.authorId === userId;
+  const isStaff = userRole === 'staff' || userRole === 'admin';
+  if (!isAuthor && !isStaff) throw new ForbiddenError('无权操作此议题');
+
+  const updated = await prisma.ticket.update({
+    where: { id },
+    data: { title },
+    include: {
+      author: { select: { id: true, username: true, minecraftName: true } },
+      assignee: { select: { id: true, username: true } },
+      labels: { include: { label: true } },
+      server: { select: { id: true, name: true } },
+      permissionRequest: true,
+    },
+  });
+
+  await auditService.create(id, userId, 'title_change', ticket.title, title);
+
+  return updated;
+}
+
 export async function closeTicket(id: number, userId: string, userRole: string) {
   const ticket = await prisma.ticket.findUnique({
     where: { id },
