@@ -23,7 +23,7 @@ export function useTicketForm() {
     selectedTemplateName.value = name
     selectedTemplate.value = await apiGetTemplate(name)
     formValues.value = {}
-    title.value = selectedTemplate.value.title_prefix || ''
+    title.value = ''
     step.value = 2
   }
 

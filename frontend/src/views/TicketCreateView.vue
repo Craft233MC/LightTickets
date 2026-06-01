@@ -179,7 +179,12 @@ async function submit() {
         <span>{{ currentTemplateSummary?.name_i18n }}</span>
       </div>
 
-      <BaseInput v-model="title" label="标题" placeholder="简要描述问题" />
+      <div>
+        <BaseInput v-model="title" label="标题" placeholder="简要描述问题" />
+        <p v-if="selectedTemplate?.title_prefix" class="mt-1 text-xs text-slate-400 dark:text-slate-500">
+          前缀「{{ selectedTemplate.title_prefix }}」将自动添加到标题
+        </p>
+      </div>
 
       <!-- Attachment upload -->
       <div class="space-y-2">

@@ -33,7 +33,9 @@ router.post('/', authMiddleware, async (req: Request, res: Response) => {
   if (!def) throw new ValidationError('无效的模板');
 
   const body = renderBody(def, formData);
-  const title = def.title_prefix ? def.title_prefix + userTitle : userTitle;
+  const title = def.title_prefix && !userTitle.startsWith(def.title_prefix)
+    ? def.title_prefix + userTitle
+    : userTitle;
 
   const ticket = await ticketService.create({
     ...rest,
