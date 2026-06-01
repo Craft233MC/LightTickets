@@ -6,7 +6,25 @@ defineProps<{
   placeholder?: string
   rows?: number
   error?: string
+  uploadable?: boolean
 }>()
+
+const emit = defineEmits<{
+  'file-drop': [e: DragEvent]
+  'file-paste': [e: ClipboardEvent]
+}>()
+
+function onDragover(e: DragEvent) {
+  e.preventDefault()
+}
+
+function onDrop(e: DragEvent) {
+  emit('file-drop', e)
+}
+
+function onPaste(e: ClipboardEvent) {
+  emit('file-paste', e)
+}
 </script>
 
 <template>
@@ -18,6 +36,9 @@ defineProps<{
       :rows="rows || 4"
       class="w-full px-3 py-2 text-sm rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-900/20 focus:border-slate-400 dark:focus:ring-slate-100/20 dark:focus:border-slate-600 resize-y transition"
       :class="{ 'border-red-400 dark:border-red-500': error }"
+      @dragover="uploadable ? onDragover($event) : undefined"
+      @drop="uploadable ? onDrop($event) : undefined"
+      @paste="uploadable ? onPaste($event) : undefined"
     />
     <p v-if="error" class="text-xs text-red-500">{{ error }}</p>
   </div>
