@@ -80,8 +80,42 @@ function cancelEditTitle() {
   editingTitle.value = false
 }
 
+const editingBody = ref(false)
+const editBodyValue = ref('')
+const bodyUpload = useMarkdownUpload()
+
+function startEditBody() {
+  if (!ticket.value) return
+  editBodyValue.value = ticket.value.body
+  editingBody.value = true
+}
+
+async function saveBody() {
+  if (!ticket.value) return
+  try {
+    let body = editBodyValue.value
+    if (bodyUpload.pendingFiles.value.size > 0) {
+      body = await bodyUpload.uploadForComment(body, ticket.value.id)
+    }
+    await store.updateBody(ticket.value.id, body)
+    editingBody.value = false
+    await fetchAuditLogs()
+    ui.toast('内容已更新', 'success')
+  } catch (e: any) {
+    ui.toast(e.message || '操作失败', 'error')
+  }
+}
+
+function cancelEditBody() {
+  editingBody.value = false
+}
+
 watch(newComment, (val) => {
   mdUpload.syncPending(val)
+})
+
+watch(editBodyValue, (val) => {
+  bodyUpload.syncPending(val)
 })
 const ticket = computed(() => store.currentTicket)
 
@@ -330,8 +364,33 @@ function onCommentFilePaste(e: ClipboardEvent) {
       <!-- Main content -->
       <div class="flex-1 min-w-0 space-y-6">
         <!-- Body -->
-        <div class="p-6 rounded-xl border border-slate-200/80 dark:border-slate-800/80 bg-white/70 dark:bg-slate-900/70 backdrop-blur">
-          <MarkdownRenderer :content="ticketBody" />
+        <div class="rounded-xl border border-slate-200/80 dark:border-slate-800/80 bg-white/70 dark:bg-slate-900/70 backdrop-blur">
+          <div v-if="!editingBody">
+            <div v-if="ticket.authorId === auth.user?.id || auth.isStaff" class="flex justify-end px-6 pt-4">
+              <button
+                class="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition flex items-center gap-1"
+                @click="startEditBody"
+              >
+                <Icon icon="lucide:pencil" class="w-3 h-3" />
+                编辑
+              </button>
+            </div>
+            <div class="p-6">
+              <MarkdownRenderer :content="ticketBody" />
+            </div>
+          </div>
+          <div v-else class="p-6 space-y-3">
+            <BaseTextarea
+              v-model="editBodyValue"
+              :rows="12"
+              uploadable
+              previewable
+            />
+            <div class="flex justify-end gap-2">
+              <BaseButton size="sm" @click="saveBody">保存</BaseButton>
+              <BaseButton size="sm" variant="secondary" @click="cancelEditBody">取消</BaseButton>
+            </div>
+          </div>
         </div>
 
         <!-- Comments -->
