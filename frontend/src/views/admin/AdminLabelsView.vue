@@ -6,6 +6,7 @@ import { useUiStore } from '@/stores/ui'
 import BaseButton from '@/components/base/BaseButton.vue'
 import BaseInput from '@/components/base/BaseInput.vue'
 import BaseModal from '@/components/base/BaseModal.vue'
+import BaseColorPicker from '@/components/base/BaseColorPicker.vue'
 
 const labels = useLabelsStore()
 const ui = useUiStore()
@@ -87,10 +88,7 @@ onMounted(() => {
         <BaseInput v-model="form.name" label="名称" placeholder="bug, feature..." />
         <div class="space-y-1.5">
           <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">颜色</label>
-          <div class="flex items-center gap-2">
-            <input v-model="form.color" type="color" class="w-8 h-8 rounded-md border border-slate-300 dark:border-slate-700 cursor-pointer" />
-            <input v-model="form.color" type="text" class="flex-1 px-3 py-2 text-sm rounded-md border border-slate-300 dark:border-slate-700 bg-white/80 dark:bg-slate-900/80 text-slate-900 dark:text-slate-100 backdrop-blur-sm" />
-          </div>
+          <BaseColorPicker v-model="form.color" />
         </div>
         <BaseInput v-model="form.description" label="描述（可选）" placeholder="标签用途说明" />
         <div class="flex justify-end gap-2">
