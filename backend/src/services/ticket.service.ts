@@ -179,7 +179,7 @@ export async function updateBody(id: number, userId: string, userRole: string, b
   const isStaff = userRole === 'staff' || userRole === 'admin';
   if (!isAuthor && !isStaff) throw new ForbiddenError('无权操作此议题');
 
-  return prisma.ticket.update({
+  const updated = await prisma.ticket.update({
     where: { id },
     data: { body },
     include: {
@@ -190,6 +190,10 @@ export async function updateBody(id: number, userId: string, userRole: string, b
       permissionRequest: true,
     },
   });
+
+  await auditService.create(id, userId, 'body_change', ticket.body, body);
+
+  return updated;
 }
 
 export async function updateTitle(id: number, userId: string, userRole: string, title: string) {
