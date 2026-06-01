@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, reactive } from 'vue'
 import type { Ticket, TicketStatus } from '@/types/ticket'
 import type { PaginatedResponse } from '@/types/api'
-import { apiGetTickets, apiGetTicket, apiUpdateTicket, apiApproveTicket, apiRejectTicket, apiCloseTicket, apiReopenTicket, type TicketFilters } from '@/api/tickets'
+import { apiGetTickets, apiGetTicket, apiUpdateTicket, apiApproveTicket, apiRejectTicket, apiCloseTicket, apiReopenTicket, apiUpdateTicketTitle, apiUpdateTicketBody, type TicketFilters } from '@/api/tickets'
 
 export const useTicketsStore = defineStore('tickets', () => {
   const tickets = ref<Ticket[]>([])
@@ -64,10 +64,22 @@ export const useTicketsStore = defineStore('tickets', () => {
     if (idx !== -1) tickets.value[idx] = updated
   }
 
+  async function updateTitle(id: number, title: string) {
+    const updated = await apiUpdateTicketTitle(id, title)
+    if (currentTicket.value?.id === id) currentTicket.value = updated
+    const idx = tickets.value.findIndex(t => t.id === id)
+    if (idx !== -1) tickets.value[idx] = updated
+  }
+
+  async function updateBody(id: number, body: string) {
+    const updated = await apiUpdateTicketBody(id, body)
+    if (currentTicket.value?.id === id) currentTicket.value = updated
+  }
+
   function setFilter(key: keyof TicketFilters, value: string | number | undefined) {
     ;(filters as Record<string, unknown>)[key] = value
     filters.page = 1
   }
 
-  return { tickets, total, currentTicket, loading, filters, fetchList, fetchDetail, updateStatus, approve, reject, closeTicket, reopenTicket, setFilter }
+  return { tickets, total, currentTicket, loading, filters, fetchList, fetchDetail, updateStatus, approve, reject, closeTicket, reopenTicket, updateTitle, updateBody, setFilter }
 })

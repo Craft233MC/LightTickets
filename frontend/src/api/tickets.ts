@@ -73,3 +73,10 @@ export function apiUpdateTicketBody(id: number, body: string) {
     body: JSON.stringify({ body }),
   })
 }
+
+export function apiUpdateTicketTitle(id: number, title: string) {
+  return apiFetch<Ticket>(`/tickets/${id}/title`, {
+    method: 'PATCH',
+    body: JSON.stringify({ title }),
+  })
+}
