@@ -10,6 +10,10 @@ export async function create(name: string, color: string, description?: string) 
   return prisma.label.create({ data: { name, color, description } });
 }
 
+export async function getById(id: string) {
+  return prisma.label.findUnique({ where: { id } });
+}
+
 export async function list() {
   return prisma.label.findMany({ orderBy: { name: 'asc' } });
 }

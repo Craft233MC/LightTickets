@@ -3,6 +3,7 @@ import { z } from 'zod';
 import * as ticketService from '../services/ticket.service.js';
 import * as labelService from '../services/label.service.js';
 import * as permissionService from '../services/permission.service.js';
+import * as auditService from '../services/audit.service.js';
 import { authMiddleware, conditionalAuthMiddleware } from '../middleware/auth.js';
 import { requireRole } from '../middleware/role.js';
 import { ValidationError } from '../utils/errors.js';
@@ -121,11 +122,19 @@ router.post('/:id/labels', authMiddleware, requireRole('staff'), async (req: Req
   const { labelId } = req.body;
   if (!labelId) throw new ValidationError('标签ID不能为空');
   await labelService.addToTicket(parseId(req.params.id), labelId);
+  const label = await labelService.getById(labelId);
+  if (label) {
+    await auditService.create(parseId(req.params.id), req.user!.userId, 'label_add', undefined, JSON.stringify({ name: label.name, color: label.color }));
+  }
   res.status(201).end();
 });
 
 router.delete('/:id/labels/:labelId', authMiddleware, requireRole('staff'), async (req: Request, res: Response) => {
+  const label = await labelService.getById(req.params.labelId);
   await labelService.removeFromTicket(parseId(req.params.id), req.params.labelId);
+  if (label) {
+    await auditService.create(parseId(req.params.id), req.user!.userId, 'label_remove', JSON.stringify({ name: label.name, color: label.color }), undefined);
+  }
   res.status(204).end();
 });
 
