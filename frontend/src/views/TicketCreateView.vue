@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { Icon } from '@iconify/vue'
 import { apiCreateTicket, apiUpdateTicketBody } from '@/api/tickets'
@@ -37,6 +37,10 @@ const loading = ref(false)
 const error = ref('')
 
 onMounted(fetchTemplates)
+
+watch(formValues, () => {
+  mdUpload.syncPending(Object.values(formValues.value).join('\n'))
+}, { deep: true })
 
 function onFileChange(e: Event) {
   const input = e.target as HTMLInputElement

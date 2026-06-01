@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, watch, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { Icon } from '@iconify/vue'
 import { useTicketsStore } from '@/stores/tickets'
@@ -53,6 +53,9 @@ const submitting = ref(false)
 const commentTextareaRef = ref<InstanceType<typeof BaseTextarea> | null>(null)
 const mdUpload = useMarkdownUpload()
 
+watch(newComment, (val) => {
+  mdUpload.syncPending(val)
+})
 const ticket = computed(() => store.currentTicket)
 
 const ticketBody = computed(() => ticket.value ? renderTicketRefs(ticket.value.body) : '')

@@ -97,6 +97,15 @@ export function useMarkdownUpload() {
     return result
   }
 
+  function syncPending(text: string) {
+    for (const [url] of pendingFiles.value) {
+      if (!text.includes(url)) {
+        URL.revokeObjectURL(url)
+        pendingFiles.value.delete(url)
+      }
+    }
+  }
+
   function cleanup() {
     for (const url of pendingFiles.value.keys()) {
       URL.revokeObjectURL(url)
@@ -112,6 +121,7 @@ export function useMarkdownUpload() {
     removePending,
     uploadAndReplace,
     uploadForComment,
+    syncPending,
     cleanup,
   }
 }
