@@ -497,7 +497,7 @@ function onBodyFilePaste(e: ClipboardEvent) {
           @keydown.escape="cancelEditTitle"
         />
         <BaseButton size="sm" @click="saveTitle">保存</BaseButton>
-        <BaseButton size="sm" variant="secondary" @click="cancelEditTitle">取消</BaseButton>
+        <BaseButton size="sm" @click="cancelEditTitle">取消</BaseButton>
       </div>
       <div class="mt-2 flex items-center gap-3 text-sm text-slate-500 dark:text-slate-400">
         <span>{{ ticket.author.username }}</span>
@@ -551,7 +551,7 @@ function onBodyFilePaste(e: ClipboardEvent) {
             </div>
             <div class="flex justify-end gap-2">
               <BaseButton size="sm" @click="saveBody">保存</BaseButton>
-              <BaseButton size="sm" variant="secondary" @click="cancelEditBody">取消</BaseButton>
+              <BaseButton size="sm" @click="cancelEditBody">取消</BaseButton>
             </div>
           </div>
         </div>
@@ -617,7 +617,7 @@ function onBodyFilePaste(e: ClipboardEvent) {
                   />
                   <div class="flex justify-end gap-2">
                     <BaseButton size="sm" :loading="savingComment" @click="saveEditComment(item.id)">保存</BaseButton>
-                    <BaseButton size="sm" variant="secondary" @click="cancelEditComment">取消</BaseButton>
+                    <BaseButton size="sm" @click="cancelEditComment">取消</BaseButton>
                   </div>
                 </div>
               </div>

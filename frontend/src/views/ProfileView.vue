@@ -77,7 +77,7 @@ async function linkMc() {
           <BaseInput v-model="avatarInput" placeholder="输入头像直链 URL" />
           <div class="flex gap-2">
             <BaseButton size="sm" :loading="savingAvatar" @click="saveAvatar">保存</BaseButton>
-            <BaseButton v-if="auth.user?.avatarUrl" size="sm" variant="secondary" :loading="savingAvatar" @click="clearAvatar">清除</BaseButton>
+            <BaseButton v-if="auth.user?.avatarUrl" size="sm" :loading="savingAvatar" @click="clearAvatar">清除</BaseButton>
           </div>
         </div>
       </div>
