@@ -10,7 +10,7 @@ export async function create(ticketId: number, authorId: string, body: string, s
 
   return prisma.comment.create({
     data: { ticketId, authorId, body, source },
-    include: { author: { select: { id: true, username: true, minecraftName: true } } },
+    include: { author: { select: { id: true, username: true, minecraftName: true, avatarUrl: true } } },
   });
 }
 
@@ -18,7 +18,7 @@ export async function listByTicket(ticketId: number) {
   return prisma.comment.findMany({
     where: { ticketId },
     orderBy: { createdAt: 'asc' },
-    include: { author: { select: { id: true, username: true, minecraftName: true } } },
+    include: { author: { select: { id: true, username: true, minecraftName: true, avatarUrl: true } } },
   });
 }
 
@@ -33,7 +33,7 @@ export async function updateBody(id: string, userId: string, body: string) {
   const updated = await prisma.comment.update({
     where: { id },
     data: { body },
-    include: { author: { select: { id: true, username: true, minecraftName: true } } },
+    include: { author: { select: { id: true, username: true, minecraftName: true, avatarUrl: true } } },
   });
 
   await auditService.create(comment.ticketId, userId, 'comment_edit', comment.body, body);

@@ -24,7 +24,7 @@ export interface Comment {
   body: string
   source: CommentSource
   createdAt: string
-  author: { id: string; username: string; minecraftName?: string }
+  author: { id: string; username: string; minecraftName?: string; avatarUrl?: string | null }
 }
 
 export interface PermissionRequest {
