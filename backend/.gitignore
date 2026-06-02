@@ -4,7 +4,8 @@ dist/
 .env.local
 coverage/
 
-# data directory - track config.yml, ignore db and uploads
+# data directory - all runtime-generated, template is src/config.default.yml
+data/config.yml
 data/data.db
 data/data.db-journal
 data/uploads/

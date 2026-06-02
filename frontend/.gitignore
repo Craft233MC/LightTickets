@@ -23,5 +23,6 @@ dist-ssr
 *.sln
 *.sw?
 
-# Generated runtime config (copied from data/config.yml at build time)
+# Generated runtime config (auto-created by vite plugin)
+data/
 public/data/
