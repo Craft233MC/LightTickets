@@ -47,6 +47,7 @@ model User {
   username       String    @unique
   minecraftUuid  String?   @unique @map("minecraft_uuid")
   minecraftName  String?   @map("minecraft_name")
+  avatarUrl      String?   @map("avatar_url")
   role           Role      @default(player)
   createdAt      DateTime  @default(now()) @map("created_at")
   updatedAt      DateTime  @updatedAt @map("updated_at")
