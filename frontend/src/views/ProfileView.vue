@@ -28,10 +28,10 @@ async function saveAvatar() {
 }
 
 async function clearAvatar() {
-  avatarInput.value = ''
   savingAvatar.value = true
   try {
     await auth.updateAvatar(null)
+    avatarInput.value = ''
     ui.toast('头像已清除', 'success')
   } catch (e: any) {
     ui.toast(e.message || '更新失败', 'error')
