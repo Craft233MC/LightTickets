@@ -3,7 +3,7 @@ import express from 'express';
 import cors from 'cors';
 import fs from 'fs';
 import { AppError } from './utils/errors.js';
-import { config } from './config.js';
+import { getConfig } from './config.js';
 import setupRoutes from './routes/setup.js';
 import authRoutes from './routes/auth.js';
 import ticketRoutes from './routes/tickets.js';
@@ -26,8 +26,8 @@ export function createApp() {
   app.use(cors());
   app.use(express.json());
 
-  if (!fs.existsSync(config.uploadDir)) {
-    fs.mkdirSync(config.uploadDir, { recursive: true });
+  if (!fs.existsSync(getConfig().uploadDir)) {
+    fs.mkdirSync(getConfig().uploadDir, { recursive: true });
   }
 
   app.get('/api/health', (_req, res) => {
@@ -37,7 +37,7 @@ export function createApp() {
   app.use('/api/setup', setupRoutes);
   app.use('/api/auth', authRoutes);
   app.use('/api/templates', templateRoutes);
-app.use('/api/admin/templates', adminTemplateRoutes);
+  app.use('/api/admin/templates', adminTemplateRoutes);
   app.use('/api/tickets', ticketRoutes);
   app.use('/api/tickets/:id/comments', commentRoutes);
   app.use('/api/tickets/:ticketId/audit', auditRoutes);

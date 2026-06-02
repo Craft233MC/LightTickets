@@ -7,5 +7,8 @@ export default defineConfig({
     setupFiles: ['./tests/setup.ts'],
     fileParallelism: false,
     sequence: { concurrent: false },
+    env: {
+      DATABASE_URL: 'file:./data/data.db',
+    },
   },
 });

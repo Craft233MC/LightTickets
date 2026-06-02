@@ -1,15 +1,78 @@
-import { loadConfig, getConfig } from './config.js';
-loadConfig();
-import { createServer } from 'http';
-import { createApp } from './app.js';
-import { initSocket } from './socket/index.js';
+import fs from 'fs';
+import yaml from 'js-yaml';
+import path from 'path';
 
-const app = createApp();
-const server = createServer(app);
-const config = getConfig();
+const configPath = path.resolve('data/config.yml');
+const raw = (yaml.load(fs.readFileSync(configPath, 'utf-8')) as Record<string, any>) ?? {};
+const port = parseInt(raw?.port || '3000', 10);
+const dbConfigured = raw.db?.databaseUrl && raw.db?.provider;
 
-initSocket(server);
+if (dbConfigured) {
+  startFullApp();
+} else {
+  startSetupServer();
+}
 
-server.listen(config.port, () => {
-  console.log(`LightTickets API running on port ${config.port}`);
-});
+async function startFullApp() {
+  const { loadConfig } = await import('./config.js');
+  const config = loadConfig();
+
+  const { runMigrations } = await import('./migrate.js');
+  runMigrations(raw.db.provider);
+
+  const { initPrisma } = await import('./db.js');
+  initPrisma();
+
+  const { initTemplates } = await import('./services/template.service.js');
+  await initTemplates();
+
+  const { createApp } = await import('./app.js');
+  const { createServer } = await import('http');
+  const { initSocket } = await import('./socket/index.js');
+
+  const app = createApp();
+  const server = createServer(app);
+  initSocket(server);
+
+  server.listen(port, () => {
+    console.log(`LightTickets API running on port ${port}`);
+  });
+}
+
+async function startSetupServer() {
+  const express = (await import('express')).default;
+  const cors = (await import('cors')).default;
+  const { AppError } = await import('./utils/errors.js');
+
+  const app = express();
+  app.use(cors());
+  app.use(express.json());
+
+  app.get('/api/health', (_req, res) => {
+    res.json({ status: 'ok' });
+  });
+
+  app.get('/api/setup/site-config', (_req, res) => {
+    res.json({ isSetup: false, requireLogin: false, siteName: 'LightTickets' });
+  });
+
+  const setupRoutes = (await import('./routes/setup.js')).default;
+  app.use('/api/setup', setupRoutes);
+
+  app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+    if (err instanceof AppError) {
+      res.status(err.statusCode).json({ error: err.message });
+      return;
+    }
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
+  });
+
+  const { createServer } = await import('http');
+  const server = createServer(app);
+
+  server.listen(port, () => {
+    console.log(`LightTickets setup server running on port ${port}`);
+    console.log('Complete setup at the web interface to initialize the database.');
+  });
+}
