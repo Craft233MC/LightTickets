@@ -2,8 +2,8 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { initPrisma, getPrisma, resetPrisma } from '../src/db.js';
 
 describe('db', () => {
-  beforeEach(() => {
-    resetPrisma();
+  beforeEach(async () => {
+    await resetPrisma();
   });
 
   it('getPrisma throws if initPrisma not called', () => {
