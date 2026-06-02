@@ -568,6 +568,7 @@ function onBodyFilePaste(e: ClipboardEvent) {
                 :src="item.author.avatarUrl"
                 class="w-8 h-8 rounded-full object-cover shrink-0"
                 alt="avatar"
+                @error="item.author.avatarUrl = null"
               />
               <div v-else class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-xs font-medium text-slate-600 dark:text-slate-300 shrink-0">
                 {{ item.author.username.charAt(0).toUpperCase() }}

@@ -68,6 +68,7 @@ async function linkMc() {
           :src="auth.user.avatarUrl"
           class="w-16 h-16 rounded-full object-cover border border-slate-200 dark:border-slate-700"
           alt="avatar"
+          @error="auth.user.avatarUrl = null"
         />
         <div v-else class="w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-xl font-medium text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
           {{ auth.user?.username?.charAt(0).toUpperCase() }}

@@ -68,6 +68,7 @@ function handleLogout() {
                 :src="auth.user.avatarUrl"
                 class="w-7 h-7 rounded-full object-cover"
                 alt="avatar"
+                @error="auth.user.avatarUrl = null"
               />
               <div v-else class="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-xs font-medium text-slate-700 dark:text-slate-300">
                 {{ auth.user?.username?.charAt(0).toUpperCase() }}
