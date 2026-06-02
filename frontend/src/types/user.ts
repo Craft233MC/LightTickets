@@ -6,6 +6,7 @@ export interface User {
   username: string
   minecraftUuid?: string
   minecraftName?: string
+  avatarUrl?: string | null
   role: Role
   createdAt?: string
   updatedAt?: string
