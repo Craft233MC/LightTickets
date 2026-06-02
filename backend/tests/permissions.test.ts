@@ -16,8 +16,8 @@ async function setupPermissionTicket() {
     .set('Authorization', `Bearer ${token}`)
     .send({
       title: 'Request builder rank',
-      body: 'I want to build',
-      type: 'permission_request',
+      template: 'permission_request',
+      formData: { reason: 'I want to build' },
     });
 
   await prisma.permissionRequest.create({

@@ -36,7 +36,6 @@ describe('POST /api/mc/tickets', () => {
       data: { name: 'mc-srv', apiKey: 'mc-key-456' },
     });
 
-    // Create user directly in DB with MC UUID already linked
     const bcrypt = await import('bcrypt');
     const hash = await bcrypt.default.hash('Password123!', 12);
     await prisma.user.create({
@@ -56,7 +55,7 @@ describe('POST /api/mc/tickets', () => {
         minecraftUuid: '550e8400-e29b-41d4-a716-446655440000',
         title: 'Block glitch',
         body: 'Blocks disappear when placed',
-        type: 'bug_report',
+        template: 'bug_report',
         context: { world: 'world', x: 100, y: 64, z: -200, gameMode: 'SURVIVAL' },
       });
 
@@ -76,9 +75,136 @@ describe('POST /api/mc/tickets', () => {
         minecraftUuid: 'unknown-uuid',
         title: 'Test',
         body: 'Body',
-        type: 'bug_report',
+        template: 'bug_report',
       });
 
     expect(res.status).toBe(404);
+  });
+});
+
+describe('GET /api/mc/tickets/:uuid', () => {
+  it('returns tickets for linked player', async () => {
+    const server = await prisma.server.create({
+      data: { name: 'mc-list', apiKey: 'mc-list-key' },
+    });
+    const bcrypt = await import('bcrypt');
+    const hash = await bcrypt.default.hash('Password123!', 12);
+    await prisma.user.create({
+      data: {
+        email: 'mclist@test.com',
+        passwordHash: hash,
+        username: 'mclist',
+        minecraftUuid: '550e8400-e29b-41d4-a716-446655440001',
+        minecraftName: 'Alex',
+      },
+    });
+
+    await request(app)
+      .post('/api/mc/tickets')
+      .set('X-Server-Key', server.apiKey)
+      .send({
+        minecraftUuid: '550e8400-e29b-41d4-a716-446655440001',
+        title: 'MC Ticket',
+        body: 'From game',
+        template: 'bug_report',
+      });
+
+    const res = await request(app)
+      .get('/api/mc/tickets/550e8400-e29b-41d4-a716-446655440001')
+      .set('X-Server-Key', server.apiKey);
+
+    expect(res.status).toBe(200);
+    expect(res.body.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('returns empty array for unknown uuid', async () => {
+    const server = await prisma.server.create({
+      data: { name: 'mc-empty', apiKey: 'mc-empty-key' },
+    });
+
+    const res = await request(app)
+      .get('/api/mc/tickets/00000000-0000-0000-0000-000000000000')
+      .set('X-Server-Key', server.apiKey);
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual([]);
+  });
+});
+
+describe('POST /api/mc/comments', () => {
+  it('creates a comment from game', async () => {
+    const server = await prisma.server.create({
+      data: { name: 'mc-comment', apiKey: 'mc-comment-key' },
+    });
+    const bcrypt = await import('bcrypt');
+    const hash = await bcrypt.default.hash('Password123!', 12);
+    await prisma.user.create({
+      data: {
+        email: 'mccomment@test.com',
+        passwordHash: hash,
+        username: 'mccomment',
+        minecraftUuid: '550e8400-e29b-41d4-a716-446655440002',
+        minecraftName: 'Commenter',
+      },
+    });
+
+    const ticket = await request(app)
+      .post('/api/mc/tickets')
+      .set('X-Server-Key', server.apiKey)
+      .send({
+        minecraftUuid: '550e8400-e29b-41d4-a716-446655440002',
+        title: 'Ticket with comment',
+        body: 'Body',
+        template: 'bug_report',
+      });
+
+    const res = await request(app)
+      .post('/api/mc/comments')
+      .set('X-Server-Key', server.apiKey)
+      .send({
+        minecraftUuid: '550e8400-e29b-41d4-a716-446655440002',
+        ticketId: ticket.body.id,
+        body: 'Comment from game',
+      });
+
+    expect(res.status).toBe(201);
+    expect(res.body.body).toBe('Comment from game');
+  });
+});
+
+describe('POST /api/mc/tickets/:id/close', () => {
+  it('allows linked player to close own ticket', async () => {
+    const server = await prisma.server.create({
+      data: { name: 'mc-close', apiKey: 'mc-close-key' },
+    });
+    const bcrypt = await import('bcrypt');
+    const hash = await bcrypt.default.hash('Password123!', 12);
+    await prisma.user.create({
+      data: {
+        email: 'mcclose@test.com',
+        passwordHash: hash,
+        username: 'mcclose',
+        minecraftUuid: '550e8400-e29b-41d4-a716-446655440003',
+        minecraftName: 'Closer',
+      },
+    });
+
+    const ticket = await request(app)
+      .post('/api/mc/tickets')
+      .set('X-Server-Key', server.apiKey)
+      .send({
+        minecraftUuid: '550e8400-e29b-41d4-a716-446655440003',
+        title: 'To close from MC',
+        body: 'Body',
+        template: 'bug_report',
+      });
+
+    const res = await request(app)
+      .post(`/api/mc/tickets/${ticket.body.id}/close`)
+      .set('X-Server-Key', server.apiKey)
+      .send({ minecraftUuid: '550e8400-e29b-41d4-a716-446655440003' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.status).toBe('resolved');
   });
 });

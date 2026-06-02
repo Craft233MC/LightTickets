@@ -4,6 +4,7 @@ import { beforeEach } from 'vitest';
 const prisma = new PrismaClient();
 
 beforeEach(async () => {
+  await prisma.ticketTemplate.deleteMany();
   await prisma.setupStatus.deleteMany();
   await prisma.auditLog.deleteMany();
   await prisma.ticketLabel.deleteMany();
