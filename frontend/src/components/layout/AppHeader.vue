@@ -63,7 +63,13 @@ function handleLogout() {
         <template v-if="auth.isAuthenticated">
           <div class="relative" ref="profileMenuRef">
             <button @click="profileMenuOpen = !profileMenuOpen" class="flex items-center gap-2 p-1.5 rounded-full border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 transition">
-              <div class="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-xs font-medium text-slate-700 dark:text-slate-300">
+              <img
+                v-if="auth.user?.avatarUrl"
+                :src="auth.user.avatarUrl"
+                class="w-7 h-7 rounded-full object-cover"
+                alt="avatar"
+              />
+              <div v-else class="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-xs font-medium text-slate-700 dark:text-slate-300">
                 {{ auth.user?.username?.charAt(0).toUpperCase() }}
               </div>
             </button>
