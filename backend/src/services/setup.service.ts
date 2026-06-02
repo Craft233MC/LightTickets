@@ -1,9 +1,9 @@
-import { PrismaClient } from '@prisma/client';
+import { getPrisma } from '../db.js';
 import bcrypt from 'bcrypt';
 import { AppError, ValidationError } from '../utils/errors.js';
 import { generateTokens } from '../utils/token.js';
 
-const prisma = new PrismaClient();
+const prisma = () => getPrisma();
 
 export interface SiteConfig {
   isSetup: boolean;
@@ -35,7 +35,7 @@ export interface SetupInput {
 }
 
 export async function getSiteConfig(): Promise<SiteConfig> {
-  const status = await prisma.setupStatus.findFirst();
+  const status = await prisma().setupStatus.findFirst();
   return {
     isSetup: status?.isSetup ?? false,
     requireLogin: status?.requireLogin ?? false,
@@ -44,10 +44,10 @@ export async function getSiteConfig(): Promise<SiteConfig> {
 }
 
 export async function updateSettings(data: { requireLogin?: boolean }) {
-  const status = await prisma.setupStatus.findFirst();
+  const status = await prisma().setupStatus.findFirst();
   if (!status) throw new AppError(404, '站点尚未初始化');
 
-  const updated = await prisma.setupStatus.update({
+  const updated = await prisma().setupStatus.update({
     where: { id: status.id },
     data: {
       ...(data.requireLogin !== undefined && { requireLogin: data.requireLogin }),
@@ -61,7 +61,7 @@ export async function updateSettings(data: { requireLogin?: boolean }) {
 }
 
 export async function getSetupStatus() {
-  const status = await prisma.setupStatus.findFirst();
+  const status = await prisma().setupStatus.findFirst();
   return {
     isSetup: status?.isSetup ?? false,
     siteName: status?.siteName ?? 'LightTickets',
@@ -70,7 +70,7 @@ export async function getSetupStatus() {
 
 export async function completeSetup(input: SetupInput) {
   // Guard: already set up
-  const existingSetup = await prisma.setupStatus.findFirst();
+  const existingSetup = await prisma().setupStatus.findFirst();
   if (existingSetup) {
     throw new AppError(409, '站点已完成初始化，无法重复设置');
   }
@@ -92,7 +92,7 @@ export async function completeSetup(input: SetupInput) {
   }
 
   // 3. Create admin user
-  const existing = await prisma.user.findFirst({
+  const existing = await prisma().user.findFirst({
     where: { OR: [{ email: input.admin.email }, { username: input.admin.username }] },
   });
   if (existing) {
@@ -100,7 +100,7 @@ export async function completeSetup(input: SetupInput) {
   }
 
   const passwordHash = await bcrypt.hash(input.admin.password, 12);
-  const admin = await prisma.user.create({
+  const admin = await prisma().user.create({
     data: {
       email: input.admin.email,
       passwordHash,
@@ -111,7 +111,7 @@ export async function completeSetup(input: SetupInput) {
 
   // 4. Create setup status record
   const siteConfig = input.site || {};
-  const setupRecord = await prisma.setupStatus.create({
+  const setupRecord = await prisma().setupStatus.create({
     data: {
       isSetup: true,
       siteName: siteConfig.siteName || 'LightTickets',
@@ -123,7 +123,7 @@ export async function completeSetup(input: SetupInput) {
   if (input.mc?.defaultServerName) {
     const crypto = await import('crypto');
     const apiKey = `lt_${crypto.randomBytes(24).toString('hex')}`;
-    await prisma.server.create({
+    await prisma().server.create({
       data: {
         name: input.mc.defaultServerName,
         apiKey,

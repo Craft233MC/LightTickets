@@ -9,8 +9,8 @@ async function createAdminAndGetToken(email = 'admin@test.com') {
   await request(app)
     .post('/api/auth/register')
     .send({ email, password: 'Password123!', username: email.split('@')[0] });
-  const user = await prisma.user.findUnique({ where: { email } });
-  if (user) await prisma.user.update({ where: { id: user.id }, data: { role: 'admin' } });
+  const user = await prisma().user.findUnique({ where: { email } });
+  if (user) await prisma().user.update({ where: { id: user.id }, data: { role: 'admin' } });
   const loginRes = await request(app)
     .post('/api/auth/login')
     .send({ email, password: 'Password123!' });
@@ -27,7 +27,7 @@ async function createUserAndGetToken(email = 'user@test.com') {
 describe('GET /api/servers', () => {
   it('returns all servers for admin', async () => {
     const token = await createAdminAndGetToken('admin-srv@test.com');
-    await prisma.server.create({ data: { name: 'test-srv', apiKey: 'key123' } });
+    await prisma().server.create({ data: { name: 'test-srv', apiKey: 'key123' } });
 
     const res = await request(app)
       .get('/api/servers')

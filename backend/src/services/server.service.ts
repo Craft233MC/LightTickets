@@ -1,32 +1,32 @@
-import { PrismaClient } from '@prisma/client';
+import { getPrisma } from '../db.js';
 import crypto from 'crypto';
 import { AppError, NotFoundError } from '../utils/errors.js';
 
-const prisma = new PrismaClient();
+const prisma = () => getPrisma();
 
 export async function create(name: string, address?: string, description?: string) {
-  const existing = await prisma.server.findUnique({ where: { name } });
+  const existing = await prisma().server.findUnique({ where: { name } });
   if (existing) throw new AppError(409, '服务器名称已存在');
 
   const apiKey = `lt_${crypto.randomBytes(24).toString('hex')}`;
 
-  return prisma.server.create({
+  return prisma().server.create({
     data: { name, apiKey, address, description },
   });
 }
 
 export async function list() {
-  return prisma.server.findMany({ orderBy: { name: 'asc' } });
+  return prisma().server.findMany({ orderBy: { name: 'asc' } });
 }
 
 export async function regenerateKey(id: string) {
-  const server = await prisma.server.findUnique({ where: { id } });
+  const server = await prisma().server.findUnique({ where: { id } });
   if (!server) throw new NotFoundError('服务器不存在');
 
   const apiKey = `lt_${crypto.randomBytes(24).toString('hex')}`;
-  return prisma.server.update({ where: { id }, data: { apiKey } });
+  return prisma().server.update({ where: { id }, data: { apiKey } });
 }
 
 export async function remove(id: string) {
-  await prisma.server.delete({ where: { id } });
+  await prisma().server.delete({ where: { id } });
 }

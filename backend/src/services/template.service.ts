@@ -1,10 +1,10 @@
 import fs from 'fs';
 import path from 'path';
 import yaml from 'js-yaml';
-import { PrismaClient } from '@prisma/client';
+import { getPrisma } from '../db.js';
 import { NotFoundError, AppError, ValidationError } from '../utils/errors.js';
 
-const prisma = new PrismaClient();
+const prisma = () => getPrisma();
 const templatesDir = path.resolve('templates');
 
 // --- Types (unchanged) ---
@@ -55,7 +55,7 @@ const cache = new Map<string, CachedTemplate>();
 
 export async function initTemplates(): Promise<void> {
   cache.clear();
-  const rows = await prisma.ticketTemplate.findMany();
+  const rows = await prisma().ticketTemplate.findMany();
   for (const row of rows) {
     cache.set(row.name, {
       id: row.id,
@@ -92,9 +92,9 @@ export async function seedTemplatesFromFiles(): Promise<void> {
         throw new Error(`missing required fields: name, description, or body`);
       }
       const nameKey = file.replace(/\.ya?ml$/, '');
-      const existing = await prisma.ticketTemplate.findUnique({ where: { name: nameKey } });
+      const existing = await prisma().ticketTemplate.findUnique({ where: { name: nameKey } });
       if (!existing) {
-        await prisma.ticketTemplate.create({
+        await prisma().ticketTemplate.create({
           data: {
             name: nameKey,
             nameI18n: def.name,
@@ -184,11 +184,11 @@ export function resolveHooks(def: TemplateDefinition, event: string): string[] {
 // --- Admin CRUD functions (async, from DB) ---
 
 export async function adminList() {
-  return prisma.ticketTemplate.findMany({ orderBy: { name: 'asc' } });
+  return prisma().ticketTemplate.findMany({ orderBy: { name: 'asc' } });
 }
 
 export async function adminGet(id: number) {
-  const row = await prisma.ticketTemplate.findUnique({ where: { id } });
+  const row = await prisma().ticketTemplate.findUnique({ where: { id } });
   if (!row) throw new NotFoundError('模板不存在');
   return row;
 }
@@ -236,13 +236,13 @@ export async function adminCreate(data: {
   titlePrefix?: string; labels?: string;
   body: string; completionHooks?: string; enabled?: boolean;
 }) {
-  const existing = await prisma.ticketTemplate.findUnique({ where: { name: data.name } });
+  const existing = await prisma().ticketTemplate.findUnique({ where: { name: data.name } });
   if (existing) throw new AppError(409, '模板 key 已存在');
 
   const bodyJson = parseYamlField(data.body, 'body');
   const hooksJson = data.completionHooks ? parseYamlField(data.completionHooks, 'completionHooks') : '[]';
 
-  const row = await prisma.ticketTemplate.create({
+  const row = await prisma().ticketTemplate.create({
     data: {
       name: data.name,
       nameI18n: data.nameI18n,
@@ -263,7 +263,7 @@ export async function adminUpdate(id: number, data: {
   nameI18n?: string; description?: string; titlePrefix?: string;
   labels?: string; body?: string; completionHooks?: string; enabled?: boolean;
 }) {
-  const existing = await prisma.ticketTemplate.findUnique({ where: { id } });
+  const existing = await prisma().ticketTemplate.findUnique({ where: { id } });
   if (!existing) throw new NotFoundError('模板不存在');
 
   const updateData: Record<string, unknown> = {};
@@ -275,7 +275,7 @@ export async function adminUpdate(id: number, data: {
   if (data.body !== undefined) updateData.body = parseYamlField(data.body, 'body');
   if (data.completionHooks !== undefined) updateData.completionHooks = parseYamlField(data.completionHooks, 'completionHooks');
 
-  const row = await prisma.ticketTemplate.update({ where: { id }, data: updateData });
+  const row = await prisma().ticketTemplate.update({ where: { id }, data: updateData });
   await initTemplates();
 
   // Sync back to local YAML file — use updated values where provided, fall back to existing
@@ -287,9 +287,9 @@ export async function adminUpdate(id: number, data: {
 }
 
 export async function adminDelete(id: number): Promise<void> {
-  const existing = await prisma.ticketTemplate.findUnique({ where: { id } });
+  const existing = await prisma().ticketTemplate.findUnique({ where: { id } });
   if (!existing) throw new NotFoundError('模板不存在');
-  await prisma.ticketTemplate.delete({ where: { id } });
+  await prisma().ticketTemplate.delete({ where: { id } });
   const filePath = path.join(templatesDir, `${existing.name}.yml`);
   if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
   await initTemplates();

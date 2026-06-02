@@ -16,8 +16,8 @@ async function createAdminAndGetToken(email = 'admin@test.com') {
   await request(app)
     .post('/api/auth/register')
     .send({ email, password: 'Password123!', username: email.split('@')[0] });
-  const user = await prisma.user.findUnique({ where: { email } });
-  if (user) await prisma.user.update({ where: { id: user.id }, data: { role: 'admin' } });
+  const user = await prisma().user.findUnique({ where: { email } });
+  if (user) await prisma().user.update({ where: { id: user.id }, data: { role: 'admin' } });
   const loginRes = await request(app)
     .post('/api/auth/login')
     .send({ email, password: 'Password123!' });
@@ -28,8 +28,8 @@ async function createStaffAndGetToken(email = 'staff@test.com') {
   await request(app)
     .post('/api/auth/register')
     .send({ email, password: 'Password123!', username: email.split('@')[0] });
-  const user = await prisma.user.findUnique({ where: { email } });
-  if (user) await prisma.user.update({ where: { id: user.id }, data: { role: 'staff' } });
+  const user = await prisma().user.findUnique({ where: { email } });
+  if (user) await prisma().user.update({ where: { id: user.id }, data: { role: 'staff' } });
   const loginRes = await request(app)
     .post('/api/auth/login')
     .send({ email, password: 'Password123!' });

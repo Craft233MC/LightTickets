@@ -1,14 +1,14 @@
-import { PrismaClient } from '@prisma/client';
+import { getPrisma } from '../db.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { config } from '../config.js';
 import { AppError, UnauthorizedError, ValidationError } from '../utils/errors.js';
 import { generateTokens } from '../utils/token.js';
 
-const prisma = new PrismaClient();
+const prisma = () => getPrisma();
 
 export async function register(email: string, password: string, username: string) {
-  const existing = await prisma.user.findFirst({
+  const existing = await prisma().user.findFirst({
     where: { OR: [{ email }, { username }] },
   });
   if (existing) {
@@ -16,7 +16,7 @@ export async function register(email: string, password: string, username: string
   }
 
   const passwordHash = await bcrypt.hash(password, 12);
-  const user = await prisma.user.create({
+  const user = await prisma().user.create({
     data: { email, passwordHash, username },
   });
 
@@ -25,7 +25,7 @@ export async function register(email: string, password: string, username: string
 }
 
 export async function login(email: string, password: string) {
-  const user = await prisma.user.findUnique({ where: { email } });
+  const user = await prisma().user.findUnique({ where: { email } });
   if (!user) throw new UnauthorizedError('邮箱或密码错误');
 
   const valid = await bcrypt.compare(password, user.passwordHash);
@@ -38,7 +38,7 @@ export async function login(email: string, password: string) {
 export async function refresh(refreshToken: string) {
   try {
     const payload = jwt.verify(refreshToken, config.jwtRefreshSecret) as { userId: string; role: string };
-    const user = await prisma.user.findUnique({ where: { id: payload.userId } });
+    const user = await prisma().user.findUnique({ where: { id: payload.userId } });
     if (!user) throw new UnauthorizedError();
 
     const accessToken = jwt.sign(
@@ -53,17 +53,17 @@ export async function refresh(refreshToken: string) {
 }
 
 export async function linkMinecraft(userId: string, code: string) {
-  const linkCode = await prisma.linkCode.findFirst({
+  const linkCode = await prisma().linkCode.findFirst({
     where: { code, used: false, expiresAt: { gt: new Date() } },
   });
   if (!linkCode) throw new ValidationError('无效或已过期的绑定码');
 
-  await prisma.user.update({
+  await prisma().user.update({
     where: { id: userId },
     data: { minecraftUuid: linkCode.minecraftUuid, minecraftName: linkCode.minecraftName },
   });
 
-  await prisma.linkCode.update({ where: { id: linkCode.id }, data: { used: true } });
+  await prisma().linkCode.update({ where: { id: linkCode.id }, data: { used: true } });
   return { uuid: linkCode.minecraftUuid, name: linkCode.minecraftName };
 }
 

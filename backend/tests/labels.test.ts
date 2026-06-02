@@ -10,9 +10,9 @@ async function createAdminAndGetToken(email = 'admin@test.com') {
     .post('/api/auth/register')
     .send({ email, password: 'Password123!', username: email.split('@')[0] });
   // Upgrade to admin in DB and re-login
-  const user = await prisma.user.findUnique({ where: { email } });
+  const user = await prisma().user.findUnique({ where: { email } });
   if (user) {
-    await prisma.user.update({
+    await prisma().user.update({
       where: { id: user.id },
       data: { role: 'admin' },
     });

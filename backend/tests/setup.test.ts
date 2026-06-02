@@ -127,7 +127,7 @@ describe('POST /api/auth/link-minecraft', () => {
       .send({ email: 'link@test.com', password: 'Password123!', username: 'linkuser' });
     const token = regRes.body.accessToken;
 
-    const server = await prisma.server.create({
+    const server = await prisma().server.create({
       data: { name: 'link-srv', apiKey: 'link-key' },
     });
 

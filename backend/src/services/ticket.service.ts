@@ -1,9 +1,10 @@
-import { PrismaClient, TicketStatus, Priority } from '@prisma/client';
+import { TicketStatus, Priority } from '@prisma/client';
+import { getPrisma } from '../db.js';
 import { NotFoundError, ForbiddenError } from '../utils/errors.js';
 import * as auditService from './audit.service.js';
 import { emitTicketUpdate, emitHookExecute } from '../socket/events.js';
 
-const prisma = new PrismaClient();
+const prisma = () => getPrisma();
 
 interface CreateTicketInput {
   title: string;
@@ -27,7 +28,7 @@ interface ListTicketsInput {
 }
 
 export async function create(input: CreateTicketInput) {
-  return prisma.ticket.create({
+  return prisma().ticket.create({
     data: {
       title: input.title,
       body: input.body,
@@ -60,7 +61,7 @@ export async function list(input: ListTicketsInput) {
   ];
 
   const [tickets, total] = await Promise.all([
-    prisma.ticket.findMany({
+    prisma().ticket.findMany({
       where,
       skip: (page - 1) * pageSize,
       take: pageSize,
@@ -71,14 +72,14 @@ export async function list(input: ListTicketsInput) {
         _count: { select: { comments: true } },
       },
     }),
-    prisma.ticket.count({ where }),
+    prisma().ticket.count({ where }),
   ]);
 
   return { tickets, total, page, pageSize };
 }
 
 export async function getById(id: number) {
-  const ticket = await prisma.ticket.findUnique({
+  const ticket = await prisma().ticket.findUnique({
     where: { id },
     include: {
       author: { select: { id: true, username: true, minecraftName: true } },
@@ -98,7 +99,7 @@ export async function update(
   userRole: string,
   data: { status?: TicketStatus; priority?: Priority; assigneeId?: string },
 ) {
-  const ticket = await prisma.ticket.findUnique({
+  const ticket = await prisma().ticket.findUnique({
     where: { id },
     include: {
       author: { select: { id: true, username: true, minecraftName: true, minecraftUuid: true } },
@@ -122,7 +123,7 @@ export async function update(
   if (data.priority && isStaff) updateData.priority = data.priority;
   if (data.assigneeId && isStaff) updateData.assigneeId = data.assigneeId;
 
-  await prisma.ticket.update({
+  await prisma().ticket.update({
     where: { id },
     data: updateData,
   });
@@ -139,7 +140,7 @@ export async function update(
     }
     // Emit completion hooks if template has hooks for this status
     if (ticket.serverId) {
-      const updatedTicket = await prisma.ticket.findUnique({
+      const updatedTicket = await prisma().ticket.findUnique({
         where: { id },
         include: { author: { select: { minecraftUuid: true, minecraftName: true } } },
       });
@@ -155,7 +156,7 @@ export async function update(
     await auditService.create(id, userId, 'priority_change', ticket.priority, data.priority);
   }
 
-  return prisma.ticket.update({
+  return prisma().ticket.update({
     where: { id },
     data: updateData,
     include: {
@@ -169,7 +170,7 @@ export async function update(
 }
 
 export async function updateBody(id: number, userId: string, userRole: string, body: string) {
-  const ticket = await prisma.ticket.findUnique({
+  const ticket = await prisma().ticket.findUnique({
     where: { id },
     include: { author: { select: { id: true } } },
   });
@@ -179,7 +180,7 @@ export async function updateBody(id: number, userId: string, userRole: string, b
   const isStaff = userRole === 'staff' || userRole === 'admin';
   if (!isAuthor && !isStaff) throw new ForbiddenError('无权操作此议题');
 
-  const updated = await prisma.ticket.update({
+  const updated = await prisma().ticket.update({
     where: { id },
     data: { body },
     include: {
@@ -197,7 +198,7 @@ export async function updateBody(id: number, userId: string, userRole: string, b
 }
 
 export async function updateTitle(id: number, userId: string, userRole: string, title: string) {
-  const ticket = await prisma.ticket.findUnique({
+  const ticket = await prisma().ticket.findUnique({
     where: { id },
     include: { author: { select: { id: true } } },
   });
@@ -208,7 +209,7 @@ export async function updateTitle(id: number, userId: string, userRole: string, 
   if (!isAuthor && !isStaff) throw new ForbiddenError('无权操作此议题');
 
   if (title === ticket.title) {
-    return prisma.ticket.findUnique({
+    return prisma().ticket.findUnique({
       where: { id },
       include: {
         author: { select: { id: true, username: true, minecraftName: true } },
@@ -220,7 +221,7 @@ export async function updateTitle(id: number, userId: string, userRole: string, 
     });
   }
 
-  const updated = await prisma.ticket.update({
+  const updated = await prisma().ticket.update({
     where: { id },
     data: { title },
     include: {
@@ -238,7 +239,7 @@ export async function updateTitle(id: number, userId: string, userRole: string, 
 }
 
 export async function closeTicket(id: number, userId: string, userRole: string) {
-  const ticket = await prisma.ticket.findUnique({
+  const ticket = await prisma().ticket.findUnique({
     where: { id },
     include: {
       author: { select: { id: true, minecraftUuid: true, minecraftName: true } },
@@ -255,7 +256,7 @@ export async function closeTicket(id: number, userId: string, userRole: string) 
     throw new ForbiddenError('只有开放或处理中的议题可以关闭');
   }
 
-  await prisma.ticket.update({
+  await prisma().ticket.update({
     where: { id },
     data: { status: 'resolved', closedAt: new Date() },
   });
@@ -272,7 +273,7 @@ export async function closeTicket(id: number, userId: string, userRole: string) 
   }
 
   if (ticket.serverId) {
-    const updatedTicket = await prisma.ticket.findUnique({
+    const updatedTicket = await prisma().ticket.findUnique({
       where: { id },
       include: { author: { select: { minecraftUuid: true, minecraftName: true } } },
     });
@@ -285,7 +286,7 @@ export async function closeTicket(id: number, userId: string, userRole: string) 
 }
 
 export async function reopenTicket(id: number, userId: string, userRole: string) {
-  const ticket = await prisma.ticket.findUnique({
+  const ticket = await prisma().ticket.findUnique({
     where: { id },
     include: {
       author: { select: { id: true, minecraftUuid: true, minecraftName: true } },
@@ -302,7 +303,7 @@ export async function reopenTicket(id: number, userId: string, userRole: string)
     throw new ForbiddenError('只有已解决的议题可以重新打开');
   }
 
-  await prisma.ticket.update({
+  await prisma().ticket.update({
     where: { id },
     data: { status: 'open', closedAt: null },
   });

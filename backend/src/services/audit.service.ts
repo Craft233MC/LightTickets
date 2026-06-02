@@ -1,13 +1,13 @@
-import { PrismaClient } from '@prisma/client';
+import { getPrisma } from '../db.js';
 import { NotFoundError } from '../utils/errors.js';
 
-const prisma = new PrismaClient();
+const prisma = () => getPrisma();
 
 export async function listByTicket(ticketId: number) {
-  const ticket = await prisma.ticket.findUnique({ where: { id: ticketId } });
+  const ticket = await prisma().ticket.findUnique({ where: { id: ticketId } });
   if (!ticket) throw new NotFoundError('议题不存在');
 
-  return prisma.auditLog.findMany({
+  return prisma().auditLog.findMany({
     where: { ticketId },
     orderBy: { createdAt: 'asc' },
     include: {
@@ -23,7 +23,7 @@ export async function create(
   oldValue?: string,
   newValue?: string,
 ) {
-  return prisma.auditLog.create({
+  return prisma().auditLog.create({
     data: { ticketId, actorId, action, oldValue, newValue },
     include: {
       actor: { select: { id: true, username: true, minecraftName: true } },

@@ -4,14 +4,17 @@ import { initPrisma, getPrisma, resetPrisma } from '../src/db.js';
 describe('db', () => {
   beforeEach(async () => {
     await resetPrisma();
+    initPrisma();
   });
 
-  it('getPrisma throws if initPrisma not called', () => {
+  it('getPrisma throws if initPrisma not called', async () => {
+    await resetPrisma();
     expect(() => getPrisma()).toThrow('PrismaClient not initialized');
+    initPrisma(); // restore for subsequent cleanup
   });
 
   it('getPrisma returns PrismaClient after initPrisma', () => {
-    process.env.DATABASE_URL = 'file:./data/data.db';
+    process.env.DATABASE_URL = 'file:./dev.db';
     initPrisma();
     const prisma = getPrisma();
     expect(prisma).toBeDefined();
@@ -19,7 +22,7 @@ describe('db', () => {
   });
 
   it('getPrisma returns same instance on multiple calls', () => {
-    process.env.DATABASE_URL = 'file:./data/data.db';
+    process.env.DATABASE_URL = 'file:./dev.db';
     initPrisma();
     const a = getPrisma();
     const b = getPrisma();

@@ -9,8 +9,8 @@ async function createAdminAndGetToken(email = 'admin@test.com') {
   await request(app)
     .post('/api/auth/register')
     .send({ email, password: 'Password123!', username: email.split('@')[0] });
-  const user = await prisma.user.findUnique({ where: { email } });
-  if (user) await prisma.user.update({ where: { id: user.id }, data: { role: 'admin' } });
+  const user = await prisma().user.findUnique({ where: { email } });
+  if (user) await prisma().user.update({ where: { id: user.id }, data: { role: 'admin' } });
   const loginRes = await request(app)
     .post('/api/auth/login')
     .send({ email, password: 'Password123!' });
@@ -130,13 +130,13 @@ describe('DELETE /api/users/:id', () => {
 
     expect(res.status).toBe(204);
 
-    const check = await prisma.user.findUnique({ where: { id: user.id } });
+    const check = await prisma().user.findUnique({ where: { id: user.id } });
     expect(check).toBeNull();
   });
 
   it('rejects self-deletion', async () => {
     const adminToken = await createAdminAndGetToken('admin-self-del@test.com');
-    const admin = await prisma.user.findUnique({ where: { email: 'admin-self-del@test.com' } });
+    const admin = await prisma().user.findUnique({ where: { email: 'admin-self-del@test.com' } });
 
     const res = await request(app)
       .delete(`/api/users/${admin!.id}`)

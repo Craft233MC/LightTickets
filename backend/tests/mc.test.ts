@@ -7,7 +7,7 @@ const app = createApp();
 
 describe('POST /api/mc/link-code', () => {
   it('generates a 6-digit link code', async () => {
-    const server = await prisma.server.create({
+    const server = await prisma().server.create({
       data: { name: 'survival', apiKey: 'test-server-key-123', address: 'mc.example.com' },
     });
 
@@ -32,13 +32,13 @@ describe('POST /api/mc/link-code', () => {
 
 describe('POST /api/mc/tickets', () => {
   it('creates a ticket from game context', async () => {
-    const server = await prisma.server.create({
+    const server = await prisma().server.create({
       data: { name: 'mc-srv', apiKey: 'mc-key-456' },
     });
 
     const bcrypt = await import('bcrypt');
     const hash = await bcrypt.default.hash('Password123!', 12);
-    await prisma.user.create({
+    await prisma().user.create({
       data: {
         email: 'mcplayer@test.com',
         passwordHash: hash,
@@ -64,7 +64,7 @@ describe('POST /api/mc/tickets', () => {
   });
 
   it('rejects unlinked player', async () => {
-    const server = await prisma.server.create({
+    const server = await prisma().server.create({
       data: { name: 'mc-srv2', apiKey: 'mc-key-789' },
     });
 
@@ -84,12 +84,12 @@ describe('POST /api/mc/tickets', () => {
 
 describe('GET /api/mc/tickets/:uuid', () => {
   it('returns tickets for linked player', async () => {
-    const server = await prisma.server.create({
+    const server = await prisma().server.create({
       data: { name: 'mc-list', apiKey: 'mc-list-key' },
     });
     const bcrypt = await import('bcrypt');
     const hash = await bcrypt.default.hash('Password123!', 12);
-    await prisma.user.create({
+    await prisma().user.create({
       data: {
         email: 'mclist@test.com',
         passwordHash: hash,
@@ -118,7 +118,7 @@ describe('GET /api/mc/tickets/:uuid', () => {
   });
 
   it('returns empty array for unknown uuid', async () => {
-    const server = await prisma.server.create({
+    const server = await prisma().server.create({
       data: { name: 'mc-empty', apiKey: 'mc-empty-key' },
     });
 
@@ -133,12 +133,12 @@ describe('GET /api/mc/tickets/:uuid', () => {
 
 describe('POST /api/mc/comments', () => {
   it('creates a comment from game', async () => {
-    const server = await prisma.server.create({
+    const server = await prisma().server.create({
       data: { name: 'mc-comment', apiKey: 'mc-comment-key' },
     });
     const bcrypt = await import('bcrypt');
     const hash = await bcrypt.default.hash('Password123!', 12);
-    await prisma.user.create({
+    await prisma().user.create({
       data: {
         email: 'mccomment@test.com',
         passwordHash: hash,
@@ -174,12 +174,12 @@ describe('POST /api/mc/comments', () => {
 
 describe('POST /api/mc/tickets/:id/close', () => {
   it('allows linked player to close own ticket', async () => {
-    const server = await prisma.server.create({
+    const server = await prisma().server.create({
       data: { name: 'mc-close', apiKey: 'mc-close-key' },
     });
     const bcrypt = await import('bcrypt');
     const hash = await bcrypt.default.hash('Password123!', 12);
-    await prisma.user.create({
+    await prisma().user.create({
       data: {
         email: 'mcclose@test.com',
         passwordHash: hash,

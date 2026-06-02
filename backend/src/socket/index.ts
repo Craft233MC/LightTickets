@@ -1,8 +1,8 @@
 import { Server as HttpServer } from 'http';
 import { Server, Socket } from 'socket.io';
-import { PrismaClient } from '@prisma/client';
+import { getPrisma } from '../db.js';
 
-const prisma = new PrismaClient();
+const prisma = () => getPrisma();
 
 let io: Server;
 
@@ -17,7 +17,7 @@ export function initSocket(httpServer: HttpServer) {
     const apiKey = socket.handshake.auth.serverKey as string;
     if (!apiKey) return next(new Error('Missing server key'));
 
-    const server = await prisma.server.findUnique({ where: { apiKey } });
+    const server = await prisma().server.findUnique({ where: { apiKey } });
     if (!server) return next(new Error('Invalid server key'));
 
     socket.data.serverId = server.id;

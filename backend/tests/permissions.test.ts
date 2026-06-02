@@ -20,14 +20,14 @@ async function setupPermissionTicket() {
       formData: { reason: 'I want to build' },
     });
 
-  await prisma.permissionRequest.create({
+  await prisma().permissionRequest.create({
     data: { ticket: { connect: { id: ticket.body.id } }, groupName: 'builder' },
   });
 
   const staff = await request(app)
     .post('/api/auth/register')
     .send({ email: 'staff@test.com', password: 'Password123!', username: 'staffuser' });
-  await prisma.user.update({ where: { email: 'staff@test.com' }, data: { role: 'staff' } });
+  await prisma().user.update({ where: { email: 'staff@test.com' }, data: { role: 'staff' } });
   const staffLogin = await request(app)
     .post('/api/auth/login')
     .send({ email: 'staff@test.com', password: 'Password123!' });

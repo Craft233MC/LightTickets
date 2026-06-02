@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { z } from 'zod';
-import { PrismaClient } from '@prisma/client';
+import { getPrisma } from '../db.js';
 import { serverAuthMiddleware } from '../middleware/server-auth.js';
 import { generateLinkCode } from '../utils/link-code.js';
 import { config } from '../config.js';
@@ -9,7 +9,7 @@ import * as ticketService from '../services/ticket.service.js';
 import * as commentService from '../services/comment.service.js';
 import * as permissionService from '../services/permission.service.js';
 
-const prisma = new PrismaClient();
+const prisma = () => getPrisma();
 const router = Router();
 
 router.use(serverAuthMiddleware);
@@ -41,7 +41,7 @@ router.post('/link-code', async (req: Request, res: Response) => {
   const code = generateLinkCode();
   const expiresAt = new Date(Date.now() + config.linkCodeExpiry);
 
-  const linkCode = await prisma.linkCode.create({
+  const linkCode = await prisma().linkCode.create({
     data: {
       code,
       minecraftUuid: parsed.data.minecraftUuid,
@@ -58,7 +58,7 @@ router.post('/tickets', async (req: Request, res: Response) => {
   const parsed = mcTicketSchema.safeParse(req.body);
   if (!parsed.success) throw new ValidationError(parsed.error.issues[0].message);
 
-  const user = await prisma.user.findUnique({ where: { minecraftUuid: parsed.data.minecraftUuid } });
+  const user = await prisma().user.findUnique({ where: { minecraftUuid: parsed.data.minecraftUuid } });
   if (!user) throw new NotFoundError('Player not linked to any account');
 
   let body = parsed.data.body;
@@ -80,7 +80,7 @@ router.post('/tickets', async (req: Request, res: Response) => {
 });
 
 router.get('/tickets/:uuid', async (req: Request, res: Response) => {
-  const user = await prisma.user.findUnique({ where: { minecraftUuid: req.params.uuid } });
+  const user = await prisma().user.findUnique({ where: { minecraftUuid: req.params.uuid } });
   if (!user) {
     res.json([]);
     return;
@@ -94,7 +94,7 @@ router.post('/comments', async (req: Request, res: Response) => {
   const { minecraftUuid, ticketId, body } = req.body;
   if (!minecraftUuid || !ticketId || !body) throw new ValidationError('minecraftUuid, ticketId, and body required');
 
-  const user = await prisma.user.findUnique({ where: { minecraftUuid } });
+  const user = await prisma().user.findUnique({ where: { minecraftUuid } });
   if (!user) throw new NotFoundError('Player not linked');
 
   const comment = await commentService.create(Number(ticketId), user.id, body, 'minecraft');
@@ -113,7 +113,7 @@ router.post('/tickets/:id/close', async (req: Request, res: Response) => {
   const { minecraftUuid } = req.body;
   if (!minecraftUuid) throw new ValidationError('minecraftUuid required');
 
-  const user = await prisma.user.findUnique({ where: { minecraftUuid } });
+  const user = await prisma().user.findUnique({ where: { minecraftUuid } });
   if (!user) throw new NotFoundError('Player not linked');
 
   const ticket = await ticketService.closeTicket(Number(req.params.id), user.id, user.role);
@@ -124,7 +124,7 @@ router.post('/tickets/:id/reopen', async (req: Request, res: Response) => {
   const { minecraftUuid } = req.body;
   if (!minecraftUuid) throw new ValidationError('minecraftUuid required');
 
-  const user = await prisma.user.findUnique({ where: { minecraftUuid } });
+  const user = await prisma().user.findUnique({ where: { minecraftUuid } });
   if (!user) throw new NotFoundError('Player not linked');
 
   const ticket = await ticketService.reopenTicket(Number(req.params.id), user.id, user.role);
