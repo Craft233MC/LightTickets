@@ -1,8 +1,13 @@
 node_modules/
 dist/
-uploads/
 .env
 .env.local
-*.db
-*.db-journal
 coverage/
+
+# data directory - track config.yml, ignore db and uploads
+data/data.db
+data/data.db-journal
+data/uploads/
+
+# generated schema (copied from template during setup)
+prisma/schema.prisma
