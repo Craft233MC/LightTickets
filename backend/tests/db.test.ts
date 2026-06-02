@@ -2,13 +2,12 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { initPrisma, getPrisma, resetPrisma } from '../src/db.js';
 
 describe('db', () => {
-  beforeEach(async () => {
-    await resetPrisma();
-    initPrisma();
+  beforeEach(() => {
+    resetPrisma();
   });
 
-  it('getPrisma throws if initPrisma not called', async () => {
-    await resetPrisma();
+  it('getPrisma throws if initPrisma not called', () => {
+    resetPrisma();
     expect(() => getPrisma()).toThrow('PrismaClient not initialized');
     initPrisma(); // restore for subsequent cleanup
   });

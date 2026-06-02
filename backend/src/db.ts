@@ -12,7 +12,11 @@ export function getPrisma(): PrismaClient {
   return prisma;
 }
 
-export async function resetPrisma(): Promise<void> {
+export function resetPrisma(): void {
+  prisma = null;
+}
+
+export async function disconnectPrisma(): Promise<void> {
   if (prisma) {
     await prisma.$disconnect();
     prisma = null;
