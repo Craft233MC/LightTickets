@@ -9,7 +9,7 @@ jwtSecret: ""
 jwtRefreshSecret: ""
 db:
   provider: "sqlite"
-  databaseUrl: "file:../data/data.db"
+  databaseUrl: "file:./data.db"
 `;
 
 describe('config', () => {
@@ -56,7 +56,7 @@ jwtSecret: "existing-secret-value-1234567890"
 jwtRefreshSecret: "existing-refresh-value-1234567890"
 db:
   provider: "sqlite"
-  databaseUrl: "file:../data/data.db"
+  databaseUrl: "file:./data.db"
 `;
     fs.writeFileSync(configPath, testConfig, 'utf-8');
 

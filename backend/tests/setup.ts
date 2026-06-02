@@ -13,7 +13,7 @@ jwtSecret: ""
 jwtRefreshSecret: ""
 db:
   provider: "sqlite"
-  databaseUrl: "file:../data/data.db"
+  databaseUrl: "file:./data.db"
 `;
 
 fs.writeFileSync(configPath, testConfig, 'utf-8');
