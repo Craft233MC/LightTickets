@@ -14,6 +14,19 @@ router.get('/', authMiddleware, requireRole('admin'), async (req: Request, res: 
   res.json(result);
 });
 
+const avatarSchema = z.object({
+  avatarUrl: z.string().url().nullable().or(z.literal('')),
+});
+
+router.patch('/me/avatar', authMiddleware, async (req: Request, res: Response) => {
+  const parsed = avatarSchema.safeParse(req.body);
+  if (!parsed.success) throw new ValidationError(parsed.error.issues[0].message);
+
+  const url = parsed.data.avatarUrl || null;
+  const user = await userService.updateAvatar(req.user!.userId, url);
+  res.json(user);
+});
+
 const roleSchema = z.object({
   role: z.enum(['player', 'staff', 'admin']),
 });

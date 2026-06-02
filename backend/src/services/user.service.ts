@@ -58,3 +58,24 @@ export async function deleteUser(userId: string, currentUserId: string) {
 
   await prisma.user.delete({ where: { id: userId } });
 }
+
+export async function updateAvatar(userId: string, avatarUrl: string | null) {
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) throw new NotFoundError('用户不存在');
+
+  return prisma.user.update({
+    where: { id: userId },
+    data: { avatarUrl: avatarUrl || null },
+    select: {
+      id: true,
+      email: true,
+      username: true,
+      minecraftUuid: true,
+      minecraftName: true,
+      avatarUrl: true,
+      role: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+}
