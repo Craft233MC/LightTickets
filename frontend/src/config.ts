@@ -1,3 +1,5 @@
+const DEFAULT_BACKEND_URL = import.meta.env.VITE_API_URL || '/api'
+
 interface FrontendConfig {
   backendUrl: string;
 }
@@ -22,12 +24,10 @@ export async function loadFrontendConfig(): Promise<FrontendConfig> {
       }
     }
   } catch {
-    // Config file not available
+    // Config file not available — use default
   }
 
-  _config = {
-    backendUrl: import.meta.env.VITE_API_URL || '/api',
-  };
+  _config = { backendUrl: DEFAULT_BACKEND_URL };
   return _config;
 }
 
