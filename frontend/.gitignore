@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Generated runtime config (copied from data/config.yml at build time)
+public/data/

@@ -1,6 +1,13 @@
 import type { ApiError } from '@/types/api'
+import { getFrontendConfig } from '@/config'
 
-const BASE_URL = import.meta.env.VITE_API_URL || '/api'
+function getBaseUrl(): string {
+  try {
+    return getFrontendConfig().backendUrl;
+  } catch {
+    return import.meta.env.VITE_API_URL || '/api';
+  }
+}
 
 let accessToken: string | null = null
 let refreshPromise: Promise<string | null> | null = null
@@ -17,7 +24,7 @@ async function refreshToken(): Promise<string | null> {
   const stored = localStorage.getItem('lt-refresh-token')
   if (!stored) return null
 
-  const res = await fetch(`${BASE_URL}/auth/refresh`, {
+  const res = await fetch(`${getBaseUrl()}/auth/refresh`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ refreshToken: stored }),
@@ -47,7 +54,7 @@ export async function apiFetch<T>(path: string, options: RequestInit = {}): Prom
     headers['Authorization'] = `Bearer ${accessToken}`
   }
 
-  let res = await fetch(`${BASE_URL}${path}`, { ...options, headers })
+  let res = await fetch(`${getBaseUrl()}${path}`, { ...options, headers })
 
   if (res.status === 401 && accessToken) {
     if (!refreshPromise) {
@@ -58,7 +65,7 @@ export async function apiFetch<T>(path: string, options: RequestInit = {}): Prom
 
     if (newToken) {
       headers['Authorization'] = `Bearer ${newToken}`
-      res = await fetch(`${BASE_URL}${path}`, { ...options, headers })
+      res = await fetch(`${getBaseUrl()}${path}`, { ...options, headers })
     } else {
       accessToken = null
       localStorage.removeItem('lt-refresh-token')
