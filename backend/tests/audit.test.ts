@@ -63,13 +63,14 @@ describe('GET /api/tickets/:ticketId/audit', () => {
     expect(res.body).toEqual([]);
   });
 
-  it('rejects unauthenticated request', async () => {
+  it('allows unauthenticated request when requireLogin is false', async () => {
     const token = await createUserAndGetToken('audit-auth@test.com');
     const ticket = await createTicket(token);
 
     const res = await request(app)
       .get(`/api/tickets/${ticket.body.id}/audit`);
 
-    expect(res.status).toBe(401);
+    expect(res.status).toBe(200);
+    expect(res.body).toBeInstanceOf(Array);
   });
 });

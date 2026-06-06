@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import * as auditService from '../services/audit.service.js';
-import { authMiddleware } from '../middleware/auth.js';
+import { conditionalAuthMiddleware } from '../middleware/auth.js';
 import { ValidationError } from '../utils/errors.js';
 
 const router = Router({ mergeParams: true });
@@ -11,7 +11,7 @@ function parseId(raw: string): number {
   return id;
 }
 
-router.use(authMiddleware);
+router.use(conditionalAuthMiddleware);
 
 router.get('/', async (req: Request, res: Response) => {
   const logs = await auditService.listByTicket(parseId(req.params.ticketId));
