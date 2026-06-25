@@ -5,7 +5,7 @@ import { UnauthorizedError } from '../utils/errors.js';
 import { getSiteConfig } from '../services/setup.service.js';
 
 export interface AuthPayload {
-  userId: string;
+  userId: number;
   role: string;
 }
 

@@ -40,7 +40,7 @@ export async function login(emailOrUsername: string, password: string) {
 
 export async function refresh(refreshToken: string) {
   try {
-    const payload = jwt.verify(refreshToken, config.jwtRefreshSecret) as { userId: string; role: string };
+    const payload = jwt.verify(refreshToken, config.jwtRefreshSecret) as { userId: number; role: string };
     const user = await prisma().user.findUnique({ where: { id: payload.userId } });
     if (!user) throw new UnauthorizedError();
 
@@ -55,7 +55,7 @@ export async function refresh(refreshToken: string) {
   }
 }
 
-export async function linkMinecraft(userId: string, code: string) {
+export async function linkMinecraft(userId: number, code: string) {
   const linkCode = await prisma().linkCode.findFirst({
     where: { code, used: false, expiresAt: { gt: new Date() } },
   });

@@ -28,7 +28,7 @@ export async function listUsers(page = 1, pageSize = 20) {
   return { users, total, page, pageSize };
 }
 
-export async function changeRole(userId: string, role: Role) {
+export async function changeRole(userId: number, role: Role) {
   const user = await prisma().user.findUnique({ where: { id: userId } });
   if (!user) throw new NotFoundError('用户不存在');
 
@@ -49,7 +49,7 @@ export async function changeRole(userId: string, role: Role) {
   });
 }
 
-export async function deleteUser(userId: string, currentUserId: string) {
+export async function deleteUser(userId: number, currentUserId: number) {
   if (userId === currentUserId) {
     throw new ValidationError('不能删除自己的账户');
   }
@@ -60,7 +60,7 @@ export async function deleteUser(userId: string, currentUserId: string) {
   await prisma().user.delete({ where: { id: userId } });
 }
 
-export async function updateUsername(userId: string, username: string) {
+export async function updateUsername(userId: number, username: string) {
   const existing = await prisma().user.findFirst({
     where: { username, id: { not: userId } },
   });
@@ -83,7 +83,7 @@ export async function updateUsername(userId: string, username: string) {
   });
 }
 
-export async function updateAvatar(userId: string, avatarUrl: string | null) {
+export async function updateAvatar(userId: number, avatarUrl: string | null) {
   const user = await prisma().user.findUnique({ where: { id: userId } });
   if (!user) throw new NotFoundError('用户不存在');
 

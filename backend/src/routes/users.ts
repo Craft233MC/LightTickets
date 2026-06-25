@@ -47,12 +47,16 @@ router.patch('/:id/role', authMiddleware, requireRole('admin'), async (req: Requ
   const parsed = roleSchema.safeParse(req.body);
   if (!parsed.success) throw new ValidationError(parsed.error.issues[0].message);
 
-  const user = await userService.changeRole(req.params.id, parsed.data.role);
+  const userId = Number(req.params.id);
+  if (isNaN(userId)) throw new ValidationError('无效的用户 ID');
+  const user = await userService.changeRole(userId, parsed.data.role);
   res.json(user);
 });
 
 router.delete('/:id', authMiddleware, requireRole('admin'), async (req: Request, res: Response) => {
-  await userService.deleteUser(req.params.id, req.user!.userId);
+  const userId = Number(req.params.id);
+  if (isNaN(userId)) throw new ValidationError('无效的用户 ID');
+  await userService.deleteUser(userId, req.user!.userId);
   res.status(204).end();
 });
 

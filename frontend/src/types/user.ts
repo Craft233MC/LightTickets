@@ -1,7 +1,7 @@
 import type { Role } from './ticket'
 
 export interface User {
-  id: string
+  id: number
   email: string
   username: string
   minecraftUuid?: string

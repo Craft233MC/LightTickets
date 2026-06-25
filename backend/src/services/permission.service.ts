@@ -4,7 +4,7 @@ import { emitTicketUpdate } from '../socket/events.js';
 
 const prisma = () => getPrisma();
 
-export async function approve(ticketId: number, actorId: string) {
+export async function approve(ticketId: number, actorId: number) {
   const ticket = await prisma().ticket.findUnique({
     where: { id: ticketId },
     include: { permissionRequest: true, author: true },
@@ -36,7 +36,7 @@ export async function approve(ticketId: number, actorId: string) {
   return updated;
 }
 
-export async function reject(ticketId: number, actorId: string, reason?: string) {
+export async function reject(ticketId: number, actorId: number, reason?: string) {
   const ticket = await prisma().ticket.findUnique({
     where: { id: ticketId },
     include: { permissionRequest: true, author: true },

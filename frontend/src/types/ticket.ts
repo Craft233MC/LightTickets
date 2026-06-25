@@ -20,11 +20,11 @@ export interface TicketLabel {
 export interface Comment {
   id: string
   ticketId: number
-  authorId: string
+  authorId: number
   body: string
   source: CommentSource
   createdAt: string
-  author: { id: string; username: string; minecraftName?: string; avatarUrl?: string | null }
+  author: { id: number; username: string; minecraftName?: string; avatarUrl?: string | null }
 }
 
 export interface PermissionRequest {
@@ -44,14 +44,14 @@ export interface Ticket {
   template: string
   status: TicketStatus
   priority: Priority
-  authorId: string
+  authorId: number
   serverId?: string
-  assigneeId?: string
+  assigneeId?: number
   createdAt: string
   updatedAt: string
   closedAt?: string
-  author: { id: string; username: string; minecraftName?: string }
-  assignee?: { id: string; username: string }
+  author: { id: number; username: string; minecraftName?: string }
+  assignee?: { id: number; username: string }
   labels: TicketLabel[]
   server?: { id: string; name: string }
   permissionRequest?: PermissionRequest
@@ -61,12 +61,12 @@ export interface Ticket {
 export interface AuditLog {
   id: string
   ticketId: number
-  actorId: string
+  actorId: number
   action: string
   oldValue?: string
   newValue?: string
   createdAt: string
-  actor: { id: string; username: string; minecraftName?: string }
+  actor: { id: number; username: string; minecraftName?: string }
 }
 
 export interface TemplateField {

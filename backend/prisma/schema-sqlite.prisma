@@ -41,7 +41,7 @@ enum ExecutionStatus {
 }
 
 model User {
-  id             String    @id @default(cuid())
+  id             Int       @id @default(autoincrement())
   email          String    @unique
   passwordHash   String    @map("password_hash")
   username       String    @unique
@@ -83,9 +83,9 @@ model Ticket {
   formData   String?      @map("form_data")
   status     TicketStatus @default(open)
   priority   Priority     @default(medium)
-  authorId   String       @map("author_id")
+  authorId   Int          @map("author_id")
   serverId   String?      @map("server_id")
-  assigneeId String?      @map("assignee_id")
+  assigneeId Int?         @map("assignee_id")
   createdAt  DateTime     @default(now()) @map("created_at")
   updatedAt  DateTime     @updatedAt @map("updated_at")
   closedAt   DateTime?    @map("closed_at")
@@ -125,7 +125,7 @@ model TicketLabel {
 model Comment {
   id        String        @id @default(cuid())
   ticketId  Int           @map("ticket_id")
-  authorId  String        @map("author_id")
+  authorId  Int           @map("author_id")
   body      String
   source    CommentSource @default(web)
   createdAt DateTime      @default(now()) @map("created_at")
@@ -145,7 +145,7 @@ model Attachment {
   path       String
   mimeType   String   @map("mime_type")
   size       Int
-  uploadedBy String   @map("uploaded_by")
+  uploadedBy Int      @map("uploaded_by")
   createdAt  DateTime @default(now()) @map("created_at")
 
   ticket     Ticket?  @relation(fields: [ticketId], references: [id], onDelete: Cascade)
@@ -200,7 +200,7 @@ model SetupStatus {
 model AuditLog {
   id        String   @id @default(cuid())
   ticketId  Int      @map("ticket_id")
-  actorId   String   @map("actor_id")
+  actorId   Int      @map("actor_id")
   action    String
   oldValue  String?  @map("old_value")
   newValue  String?  @map("new_value")

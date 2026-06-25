@@ -5,7 +5,7 @@ import * as auditService from './audit.service.js';
 
 const prisma = () => getPrisma();
 
-export async function create(ticketId: number, authorId: string, body: string, source: CommentSource = 'web') {
+export async function create(ticketId: number, authorId: number, body: string, source: CommentSource = 'web') {
   const ticket = await prisma().ticket.findUnique({ where: { id: ticketId } });
   if (!ticket) throw new NotFoundError('议题不存在');
 
@@ -23,7 +23,7 @@ export async function listByTicket(ticketId: number) {
   });
 }
 
-export async function updateBody(id: string, userId: string, body: string) {
+export async function updateBody(id: string, userId: number, body: string) {
   const comment = await prisma().comment.findUnique({
     where: { id },
     include: { author: { select: { id: true } } },

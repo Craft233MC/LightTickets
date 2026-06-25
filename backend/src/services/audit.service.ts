@@ -18,7 +18,7 @@ export async function listByTicket(ticketId: number) {
 
 export async function create(
   ticketId: number,
-  actorId: string,
+  actorId: number,
   action: string,
   oldValue?: string,
   newValue?: string,

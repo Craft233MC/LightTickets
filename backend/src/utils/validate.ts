@@ -33,7 +33,7 @@ export const createTicketSchema = z.object({
 export const updateTicketSchema = z.object({
   status: ticketStatusSchema.optional(),
   priority: prioritySchema.optional(),
-  assigneeId: z.string().optional(),
+  assigneeId: z.number().int().optional(),
 });
 
 export const createLabelSchema = z.object({
