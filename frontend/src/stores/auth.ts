@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { User } from '@/types/user'
-import { apiLogin, apiRegister, apiRefresh, apiLinkMinecraft, apiUpdateAvatar, apiUpdateUsername, apiChangePassword } from '@/api/auth'
+import { apiLogin, apiRegister, apiRefresh, apiLinkMinecraft, apiUpdateAvatar, apiUpdateUsername, apiChangePassword, apiUpdateEmail } from '@/api/auth'
 import { setAccessToken } from '@/api/client'
 
 export const useAuthStore = defineStore('auth', () => {
@@ -81,5 +81,12 @@ export const useAuthStore = defineStore('auth', () => {
     await apiChangePassword(currentPassword, newPassword)
   }
 
-  return { user, loading, isAuthenticated, isStaff, isAdmin, login, register, restore, logout, setTokens, linkMinecraft, updateAvatar, updateUsername, changePassword }
+  async function updateEmail(email: string) {
+    const updated = await apiUpdateEmail(email)
+    if (user.value) {
+      user.value.email = updated.email
+    }
+  }
+
+  return { user, loading, isAuthenticated, isStaff, isAdmin, login, register, restore, logout, setTokens, linkMinecraft, updateAvatar, updateUsername, changePassword, updateEmail }
 })

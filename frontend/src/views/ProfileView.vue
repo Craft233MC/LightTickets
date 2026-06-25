@@ -18,6 +18,9 @@ const savingAvatar = ref(false)
 const usernameInput = ref(auth.user?.username || '')
 const savingUsername = ref(false)
 
+const emailInput = ref(auth.user?.email || '')
+const savingEmail = ref(false)
+
 const currentPassword = ref('')
 const newPassword = ref('')
 const confirmPassword = ref('')
@@ -38,6 +41,24 @@ async function saveUsername() {
     ui.toast(e.message || '更新失败', 'error')
   } finally {
     savingUsername.value = false
+  }
+}
+
+async function saveEmail() {
+  const val = emailInput.value.trim()
+  if (!val || !val.includes('@')) {
+    ui.toast('请输入有效的邮箱地址', 'error')
+    return
+  }
+  if (val === auth.user?.email) return
+  savingEmail.value = true
+  try {
+    await auth.updateEmail(val)
+    ui.toast('邮箱已更新', 'success')
+  } catch (e: any) {
+    ui.toast(e.message || '更新失败', 'error')
+  } finally {
+    savingEmail.value = false
   }
 }
 
@@ -138,6 +159,14 @@ async function changePassword() {
         <div class="flex gap-2">
           <BaseInput v-model="usernameInput" placeholder="2-32 个字符" class="flex-1" />
           <BaseButton size="sm" :loading="savingUsername" :disabled="usernameInput.trim() === auth.user?.username" @click="saveUsername">保存</BaseButton>
+        </div>
+      </div>
+
+      <div class="space-y-1.5">
+        <label class="text-sm text-slate-500 dark:text-slate-400">邮箱</label>
+        <div class="flex gap-2">
+          <BaseInput v-model="emailInput" placeholder="your@email.com" class="flex-1" />
+          <BaseButton size="sm" :loading="savingEmail" :disabled="emailInput.trim() === auth.user?.email" @click="saveEmail">保存</BaseButton>
         </div>
       </div>
 

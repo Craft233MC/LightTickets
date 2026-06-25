@@ -52,6 +52,18 @@ router.patch('/me/password', authMiddleware, async (req: Request, res: Response)
   res.json({ message: '密码已更新' });
 });
 
+const emailSchema = z.object({
+  email: z.string().email(),
+});
+
+router.patch('/me/email', authMiddleware, async (req: Request, res: Response) => {
+  const parsed = emailSchema.safeParse(req.body);
+  if (!parsed.success) throw new ValidationError(parsed.error.issues[0].message);
+
+  const user = await userService.updateEmail(req.user!.userId, parsed.data.email);
+  res.json(user);
+});
+
 const roleSchema = z.object({
   role: z.enum(['player', 'staff', 'admin']),
 });

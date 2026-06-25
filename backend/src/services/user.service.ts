@@ -115,3 +115,26 @@ export async function changePassword(userId: number, currentPassword: string, ne
   const passwordHash = await bcrypt.hash(newPassword, 12);
   await prisma().user.update({ where: { id: userId }, data: { passwordHash } });
 }
+
+export async function updateEmail(userId: number, email: string) {
+  const existing = await prisma().user.findFirst({
+    where: { email, id: { not: userId } },
+  });
+  if (existing) throw new AppError(409, '该邮箱已被注册');
+
+  return prisma().user.update({
+    where: { id: userId },
+    data: { email },
+    select: {
+      id: true,
+      email: true,
+      username: true,
+      minecraftUuid: true,
+      minecraftName: true,
+      avatarUrl: true,
+      role: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+}
