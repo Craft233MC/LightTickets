@@ -27,6 +27,18 @@ router.patch('/me/avatar', authMiddleware, async (req: Request, res: Response) =
   res.json(user);
 });
 
+const usernameSchema = z.object({
+  username: z.string().min(2).max(32),
+});
+
+router.patch('/me/username', authMiddleware, async (req: Request, res: Response) => {
+  const parsed = usernameSchema.safeParse(req.body);
+  if (!parsed.success) throw new ValidationError(parsed.error.issues[0].message);
+
+  const user = await userService.updateUsername(req.user!.userId, parsed.data.username);
+  res.json(user);
+});
+
 const roleSchema = z.object({
   role: z.enum(['player', 'staff', 'admin']),
 });

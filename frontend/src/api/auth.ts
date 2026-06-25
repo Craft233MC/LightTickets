@@ -35,3 +35,10 @@ export function apiUpdateAvatar(avatarUrl: string | null) {
     body: JSON.stringify({ avatarUrl }),
   })
 }
+
+export function apiUpdateUsername(username: string) {
+  return apiFetch<User>('/users/me/username', {
+    method: 'PATCH',
+    body: JSON.stringify({ username }),
+  })
+}

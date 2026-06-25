@@ -6,21 +6,23 @@ import { prisma } from './setup.js';
 const app = createApp();
 
 async function createAdminAndGetToken(email = 'admin@test.com') {
+  const username = email.split('@')[0];
   await request(app)
     .post('/api/auth/register')
-    .send({ email, password: 'Password123!', username: email.split('@')[0] });
+    .send({ email, password: 'Password123!', username });
   const user = await prisma().user.findUnique({ where: { email } });
   if (user) await prisma().user.update({ where: { id: user.id }, data: { role: 'admin' } });
   const loginRes = await request(app)
     .post('/api/auth/login')
-    .send({ email, password: 'Password123!' });
+    .send({ emailOrUsername: email, password: 'Password123!' });
   return loginRes.body.accessToken;
 }
 
 async function createUserAndGetToken(email = 'user@test.com') {
+  const username = email.split('@')[0];
   const res = await request(app)
     .post('/api/auth/register')
-    .send({ email, password: 'Password123!', username: email.split('@')[0] });
+    .send({ email, password: 'Password123!', username });
   return { token: res.body.accessToken, user: res.body.user };
 }
 
@@ -143,5 +145,55 @@ describe('DELETE /api/users/:id', () => {
       .set('Authorization', `Bearer ${adminToken}`);
 
     expect(res.status).toBe(400);
+  });
+});
+
+describe('PATCH /api/users/me/username', () => {
+  it('updates own username', async () => {
+    const { token } = await createUserAndGetToken('uname@test.com');
+
+    const res = await request(app)
+      .patch('/api/users/me/username')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ username: 'newname' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.username).toBe('newname');
+  });
+
+  it('rejects duplicate username', async () => {
+    await createUserAndGetToken('taken@test.com');
+    const { token } = await createUserAndGetToken('other@test.com');
+
+    const res = await request(app)
+      .patch('/api/users/me/username')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ username: 'taken' });
+
+    expect(res.status).toBe(409);
+  });
+
+  it('rejects username that is too short', async () => {
+    const { token } = await createUserAndGetToken('short@test.com');
+
+    const res = await request(app)
+      .patch('/api/users/me/username')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ username: 'a' });
+
+    expect(res.status).toBe(400);
+  });
+
+  it('allows changing to a new unique username', async () => {
+    const { token, user } = await createUserAndGetToken('change@test.com');
+
+    const res = await request(app)
+      .patch('/api/users/me/username')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ username: 'changed' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.username).toBe('changed');
+    expect(res.body.id).toBe(user.id);
   });
 });

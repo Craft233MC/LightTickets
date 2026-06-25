@@ -98,7 +98,7 @@ describe('PATCH /api/setup/settings', () => {
 
     const loginRes = await request(app)
       .post('/api/auth/login')
-      .send({ email: 'settings-admin@test.com', password: 'admin123' });
+      .send({ emailOrUsername: 'settings-admin@test.com', password: 'admin123' });
 
     const res = await request(app)
       .patch('/api/setup/settings')
@@ -123,7 +123,7 @@ describe('PATCH /api/setup/settings', () => {
 
     const loginRes = await request(app)
       .post('/api/auth/login')
-      .send({ email: 'settings-player@test.com', password: 'Password123!' });
+      .send({ emailOrUsername: 'settings-player@test.com', password: 'Password123!' });
 
     const res = await request(app)
       .patch('/api/setup/settings')
@@ -143,7 +143,7 @@ describe('PATCH /api/setup/settings', () => {
 
     const loginRes = await request(app)
       .post('/api/auth/login')
-      .send({ email: 'settings-ext@test.com', password: 'admin123' });
+      .send({ emailOrUsername: 'settings-ext@test.com', password: 'admin123' });
 
     const res = await request(app)
       .patch('/api/setup/settings')
@@ -170,7 +170,7 @@ describe('PATCH /api/setup/settings', () => {
 
     const loginRes = await request(app)
       .post('/api/auth/login')
-      .send({ email: 'settings-clear@test.com', password: 'admin123' });
+      .send({ emailOrUsername: 'settings-clear@test.com', password: 'admin123' });
 
     // First set values
     await request(app)
@@ -199,7 +199,7 @@ describe('PATCH /api/setup/settings', () => {
 
     const loginRes = await request(app)
       .post('/api/auth/login')
-      .send({ email: 'settings-valid@test.com', password: 'admin123' });
+      .send({ emailOrUsername: 'settings-valid@test.com', password: 'admin123' });
 
     const res = await request(app)
       .patch('/api/setup/settings')

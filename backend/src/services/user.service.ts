@@ -1,6 +1,6 @@
 import { Role } from '@prisma/client';
 import { getPrisma } from '../db.js';
-import { NotFoundError, ValidationError } from '../utils/errors.js';
+import { AppError, NotFoundError, ValidationError } from '../utils/errors.js';
 
 const prisma = () => getPrisma();
 
@@ -58,6 +58,29 @@ export async function deleteUser(userId: string, currentUserId: string) {
   if (!user) throw new NotFoundError('用户不存在');
 
   await prisma().user.delete({ where: { id: userId } });
+}
+
+export async function updateUsername(userId: string, username: string) {
+  const existing = await prisma().user.findFirst({
+    where: { username, id: { not: userId } },
+  });
+  if (existing) throw new AppError(409, '该用户名已被占用');
+
+  return prisma().user.update({
+    where: { id: userId },
+    data: { username },
+    select: {
+      id: true,
+      email: true,
+      username: true,
+      minecraftUuid: true,
+      minecraftName: true,
+      avatarUrl: true,
+      role: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
 }
 
 export async function updateAvatar(userId: string, avatarUrl: string | null) {

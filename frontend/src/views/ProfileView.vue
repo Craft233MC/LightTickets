@@ -15,6 +15,27 @@ const linking = ref(false)
 const avatarInput = ref(auth.user?.avatarUrl || '')
 const savingAvatar = ref(false)
 
+const usernameInput = ref(auth.user?.username || '')
+const savingUsername = ref(false)
+
+async function saveUsername() {
+  const val = usernameInput.value.trim()
+  if (!val || val.length < 2 || val.length > 32) {
+    ui.toast('用户名需要 2-32 个字符', 'error')
+    return
+  }
+  if (val === auth.user?.username) return
+  savingUsername.value = true
+  try {
+    await auth.updateUsername(val)
+    ui.toast('用户名已更新', 'success')
+  } catch (e: any) {
+    ui.toast(e.message || '更新失败', 'error')
+  } finally {
+    savingUsername.value = false
+  }
+}
+
 async function saveAvatar() {
   savingAvatar.value = true
   try {
@@ -86,11 +107,16 @@ async function linkMc() {
     <!-- Account info -->
     <section class="px-6 py-5 rounded-xl border border-slate-200/80 dark:border-slate-800/80 bg-white/70 dark:bg-slate-900/70 backdrop-blur space-y-4">
       <h2 class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">账号信息</h2>
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-        <div>
-          <span class="text-slate-500 dark:text-slate-400">用户名</span>
-          <p class="mt-1 font-medium text-slate-900 dark:text-white">{{ auth.user?.username }}</p>
+
+      <div class="space-y-1.5">
+        <label class="text-sm text-slate-500 dark:text-slate-400">用户名</label>
+        <div class="flex gap-2">
+          <BaseInput v-model="usernameInput" placeholder="2-32 个字符" class="flex-1" />
+          <BaseButton size="sm" :loading="savingUsername" :disabled="usernameInput.trim() === auth.user?.username" @click="saveUsername">保存</BaseButton>
         </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
         <div>
           <span class="text-slate-500 dark:text-slate-400">邮箱</span>
           <p class="mt-1 font-medium text-slate-900 dark:text-white">{{ auth.user?.email }}</p>

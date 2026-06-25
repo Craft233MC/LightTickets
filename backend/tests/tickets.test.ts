@@ -20,7 +20,7 @@ async function createAdminAndGetToken(email = 'admin@test.com') {
   if (user) await prisma().user.update({ where: { id: user.id }, data: { role: 'admin' } });
   const loginRes = await request(app)
     .post('/api/auth/login')
-    .send({ email, password: 'Password123!' });
+    .send({ emailOrUsername: email, password: 'Password123!' });
   return loginRes.body.accessToken;
 }
 
@@ -32,7 +32,7 @@ async function createStaffAndGetToken(email = 'staff@test.com') {
   if (user) await prisma().user.update({ where: { id: user.id }, data: { role: 'staff' } });
   const loginRes = await request(app)
     .post('/api/auth/login')
-    .send({ email, password: 'Password123!' });
+    .send({ emailOrUsername: email, password: 'Password123!' });
   return loginRes.body.accessToken;
 }
 

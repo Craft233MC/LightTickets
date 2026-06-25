@@ -30,7 +30,7 @@ async function setupPermissionTicket() {
   await prisma().user.update({ where: { email: 'staff@test.com' }, data: { role: 'staff' } });
   const staffLogin = await request(app)
     .post('/api/auth/login')
-    .send({ email: 'staff@test.com', password: 'Password123!' });
+    .send({ emailOrUsername: 'staff@test.com', password: 'Password123!' });
 
   return { ticketId: ticket.body.id, staffToken: staffLogin.body.accessToken, playerToken: token };
 }

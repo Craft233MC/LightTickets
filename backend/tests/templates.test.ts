@@ -26,7 +26,7 @@ async function setupAndGetAdmin() {
     });
   const loginRes = await request(app)
     .post('/api/auth/login')
-    .send({ email: 'admin@tmpl.test', password: 'admin123' });
+    .send({ emailOrUsername: 'admin@tmpl.test', password: 'admin123' });
   return loginRes.body.accessToken;
 }
 
