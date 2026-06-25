@@ -67,9 +67,15 @@ export async function getSiteConfig(): Promise<SiteConfig> {
       siteUrl: status?.siteUrl ?? null,
       footerContent: status?.footerContent ?? null,
     };
-  } catch (e) {
-    // DB not initialized yet — expected on fresh install
-    console.warn('[setup] Could not query setup status:', e instanceof Error ? e.message : e);
+  } catch (e: any) {
+    // Only treat actual DB connection / missing-table errors as "not initialized".
+    // PrismaClientValidationError means the schema is out of sync — re-throw so
+    // the caller sees a real error instead of silently falling back to setup mode.
+    const msg = e?.message || '';
+    if (e?.name === 'PrismaClientValidationError' || msg.includes('Unknown argument')) {
+      throw e;
+    }
+    console.warn('[setup] Could not query setup status:', msg);
     return { isSetup: false, requireLogin: false, allowWebRegister: true, siteName: raw.siteName || 'LightTickets', siteUrl: null, footerContent: null };
   }
 }
@@ -181,19 +187,13 @@ export async function completeSetup(input: SetupInput) {
   }
   process.env.DATABASE_URL = databaseUrl;
 
-  // Only run migrations and init prisma if not already initialized
-  let prisma;
-  try {
-    const { getPrisma } = await import('../db.js');
-    prisma = getPrisma();
-  } catch {
-    const { runMigrations } = await import('../migrate.js');
-    runMigrations(input.db.provider);
+  // Always run migrations to bring schema up to date, then (re)init prisma
+  const { runMigrations } = await import('../migrate.js');
+  runMigrations(input.db.provider);
 
-    const { initPrisma, getPrisma } = await import('../db.js');
-    initPrisma();
-    prisma = getPrisma();
-  }
+  const { initPrisma, getPrisma } = await import('../db.js');
+  initPrisma();
+  const prisma = getPrisma();
 
   // 5. Create admin user
   const existingUser = await prisma.user.findFirst({

@@ -1,19 +1,23 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, afterEach } from 'vitest';
 import { initPrisma, getPrisma, resetPrisma } from '../src/db.js';
 
+const DB_URL = process.env.DATABASE_URL || 'file:./data/dev.db';
+
 describe('db', () => {
-  beforeEach(() => {
-    resetPrisma();
+  afterEach(() => {
+    // Restore shared client so the global setup.ts beforeEach keeps working
+    process.env.DATABASE_URL = DB_URL;
+    initPrisma();
   });
 
   it('getPrisma throws if initPrisma not called', () => {
     resetPrisma();
     expect(() => getPrisma()).toThrow('PrismaClient not initialized');
-    initPrisma(); // restore for subsequent cleanup
   });
 
   it('getPrisma returns PrismaClient after initPrisma', () => {
-    process.env.DATABASE_URL = 'file:./dev.db';
+    resetPrisma();
+    process.env.DATABASE_URL = DB_URL;
     initPrisma();
     const prisma = getPrisma();
     expect(prisma).toBeDefined();
@@ -21,7 +25,8 @@ describe('db', () => {
   });
 
   it('getPrisma returns same instance on multiple calls', () => {
-    process.env.DATABASE_URL = 'file:./dev.db';
+    resetPrisma();
+    process.env.DATABASE_URL = DB_URL;
     initPrisma();
     const a = getPrisma();
     const b = getPrisma();

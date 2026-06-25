@@ -13,10 +13,21 @@ jwtSecret: ""
 jwtRefreshSecret: ""
 db:
   provider: "sqlite"
-  databaseUrl: "file:./data.db"
+  databaseUrl: "file:./data/dev.db"
 `;
 
+// Delete stale test DB so migrations always start fresh.
+// Prisma resolves file: URLs relative to the schema directory (prisma/).
+const testDbPath = path.resolve('prisma', 'data', 'dev.db');
+if (fs.existsSync(testDbPath)) {
+  fs.unlinkSync(testDbPath);
+}
+
 fs.writeFileSync(configPath, testConfig, 'utf-8');
+process.env.DATABASE_URL = 'file:./data/dev.db';
+
+const { runMigrations } = await import('../src/migrate.js');
+runMigrations('sqlite');
 
 const { initPrisma, getPrisma } = await import('../src/db.js');
 
