@@ -2,9 +2,12 @@ import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import * as authService from '../services/auth.service.js';
 import { authMiddleware } from '../middleware/auth.js';
+import { platformOnlyMiddleware } from '../middleware/platform.js';
 import { ValidationError } from '../utils/errors.js';
 
 const router = Router();
+
+router.use(platformOnlyMiddleware);
 
 const registerSchema = z.object({
   email: z.string().email(),

@@ -26,7 +26,10 @@ async function refreshToken(): Promise<string | null> {
 
   const res = await fetch(`${getBaseUrl()}/auth/refresh`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Platform-Internal': 'true',
+    },
     body: JSON.stringify({ refreshToken: stored }),
   })
 
@@ -43,6 +46,7 @@ async function refreshToken(): Promise<string | null> {
 
 export async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
   const headers: Record<string, string> = {
+    'X-Platform-Internal': 'true',
     ...(options.headers as Record<string, string> || {}),
   }
 
