@@ -184,7 +184,7 @@ async function changePassword() {
               </div>
             </template>
             <template v-else>
-              <div class="flex items-center gap-2">
+              <div class="flex items-center gap-2 max-w-lg">
                 <BaseInput v-model="usernameInput" placeholder="2-32 个字符" class="flex-1 !py-1 !text-sm" />
                 <BaseButton size="sm" :loading="savingUsername" :disabled="usernameInput.trim() === auth.user?.username" @click="saveUsername">确认</BaseButton>
                 <BaseButton size="sm" @click="editingUsername = false; usernameInput = auth.user?.username || ''">取消</BaseButton>
@@ -199,7 +199,7 @@ async function changePassword() {
               </div>
             </template>
             <template v-else>
-              <div class="flex items-center gap-2">
+              <div class="flex items-center gap-2 max-w-lg">
                 <BaseInput v-model="emailInput" placeholder="your@email.com" class="flex-1 !py-1 !text-sm" />
                 <BaseButton size="sm" :loading="savingEmail" :disabled="emailInput.trim() === auth.user?.email" @click="saveEmail">确认</BaseButton>
                 <BaseButton size="sm" @click="editingEmail = false; emailInput = auth.user?.email || ''">取消</BaseButton>
