@@ -740,7 +740,36 @@ X-Server-Key: server-api-key
 X-Server-Key: server-api-key
 ```
 
-**响应 (200):** 议题数组
+**查询参数:**
+- `page`: 页码 (默认1)
+- `pageSize`: 每页数量 (默认10)
+
+**响应 (200):**
+```json
+{
+  "tickets": [
+    {
+      "id": 1,
+      "title": "议题标题",
+      "status": "open",
+      "priority": "medium",
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "author": {
+        "id": 1,
+        "username": "username",
+        "minecraftName": null
+      },
+      "labels": [],
+      "_count": {
+        "comments": 5
+      }
+    }
+  ],
+  "total": 100,
+  "page": 1,
+  "pageSize": 10
+}
+```
 
 ### 从Minecraft添加评论
 > `POST /api/mc/comments`
