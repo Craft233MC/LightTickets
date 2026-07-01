@@ -9,3 +9,29 @@ api-version: '1.21'
 folia-supported: true
 
 authors: [ Neokoni ]
+
+permissions:
+  lighttickets.*:
+    description: "LightTickets 全部权限"
+    default: op
+    children:
+      - lighttickets.admin
+      - lighttickets.player
+  lighttickets.admin:
+    description: "LightTickets 管理权限"
+    children:
+      - lighttickets.reload
+  lighttickets.player:
+    description: "LightTickets 玩家权限"
+    children:
+      - lighttickets.bind
+      - lighttickets.ticket.create
+  lighttickets.reload:
+    description: "重载插件"
+    default: op
+  lighttickets.bind:
+    description: "绑定 LightTickets 账号"
+    default: true
+  lighttickets.ticket.create:
+    description: "创建议题"
+    default: true

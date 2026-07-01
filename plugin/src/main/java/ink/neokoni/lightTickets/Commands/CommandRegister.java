@@ -29,6 +29,8 @@ public class CommandRegister {
         public LiteralArgumentBuilder<CommandSourceStack> get(String command) {
             return Commands.literal(command)
                     .then(Commands.literal("bind")
+                            .requires(ctx -> ctx.getSender().hasPermission("lighttickets.bind")
+                                    || ctx.getSender().hasPermission("lighttickets.player"))
                             .executes(ctx -> {
                                 if (ctx.getSource().getSender() instanceof Player player) {
                                     Bukkit.getAsyncScheduler().runNow(LightTickets.getInstance(),
@@ -37,6 +39,8 @@ public class CommandRegister {
                                 return Command.SINGLE_SUCCESS;
                             }))
                     .then(Commands.literal("ticket")
+                            .requires(ctx -> ctx.getSender().hasPermission("lighttickets.ticket.create")
+                                    || ctx.getSender().hasPermission("lighttickets.player"))
                             .then(Commands.literal("create")
                                     .then(Commands.argument("title", StringArgumentType.greedyString())
                                             .executes(ctx -> {
@@ -53,6 +57,8 @@ public class CommandRegister {
                                                 return Command.SINGLE_SUCCESS;
                                             }))))
                     .then(Commands.literal("reload")
+                            .requires(ctx -> ctx.getSender().hasPermission("lighttickets.reload")
+                                    || ctx.getSender().hasPermission("lighttickets.admin"))
                             .executes(ctx -> {
                                 new Reload(ctx.getSource().getSender());
                                 return Command.SINGLE_SUCCESS;
