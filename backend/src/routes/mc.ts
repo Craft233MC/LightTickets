@@ -91,19 +91,14 @@ router.post('/tickets', async (req: Request, res: Response) => {
   const user = await prisma().user.findUnique({ where: { minecraftUuid: parsed.data.minecraftUuid } });
   if (!user) throw new NotFoundError('Player not linked to any account');
 
-  let body = parsed.data.body;
-  if (parsed.data.context) {
-    const ctx = parsed.data.context;
-    body += `\n\n---\n**Game Context:**\n- World: ${ctx.world}\n- Position: ${ctx.x}, ${ctx.y}, ${ctx.z}\n- Game Mode: ${ctx.gameMode}`;
-  }
-
   const ticket = await ticketService.create({
     title: parsed.data.title,
-    body,
+    body: parsed.data.body,
     template: parsed.data.template,
     formData: parsed.data.formData || {},
     authorId: user.id,
     serverId: req.server!.id,
+    gameContext: parsed.data.context ? JSON.stringify(parsed.data.context) : undefined,
   });
 
   res.status(201).json(ticket);

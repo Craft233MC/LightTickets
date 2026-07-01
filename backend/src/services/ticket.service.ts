@@ -14,6 +14,7 @@ interface CreateTicketInput {
   priority?: Priority;
   serverId?: string;
   authorId: string;
+  gameContext?: string;
 }
 
 interface ListTicketsInput {
@@ -34,6 +35,7 @@ export async function create(input: CreateTicketInput) {
       body: input.body,
       template: input.template,
       formData: input.formData ? JSON.stringify(input.formData) : null,
+      gameContext: input.gameContext ?? null,
       priority: input.priority || 'medium',
       authorId: input.authorId,
       serverId: input.serverId,

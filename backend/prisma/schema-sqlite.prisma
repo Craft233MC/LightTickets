@@ -81,6 +81,7 @@ model Ticket {
   body       String
   template   String   @default("")
   formData   String?      @map("form_data")
+  gameContext String?     @map("game_context")
   status     TicketStatus @default(open)
   priority   Priority     @default(medium)
   authorId   Int          @map("author_id")

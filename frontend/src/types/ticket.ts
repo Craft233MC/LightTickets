@@ -4,6 +4,14 @@ export type Priority = 'low' | 'medium' | 'high' | 'critical'
 export type CommentSource = 'web' | 'minecraft'
 export type ExecutionStatus = 'pending' | 'executed' | 'failed'
 
+export interface GameContext {
+  world?: string
+  x?: number
+  y?: number
+  z?: number
+  gameMode?: string
+}
+
 export interface Label {
   id: string
   name: string
@@ -46,6 +54,7 @@ export interface Ticket {
   priority: Priority
   authorId: number
   serverId?: string
+  gameContext?: string | null
   assigneeId?: number
   createdAt: string
   updatedAt: string

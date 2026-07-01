@@ -17,7 +17,7 @@ import BaseButton from '@/components/base/BaseButton.vue'
 import BaseTextarea from '@/components/base/BaseTextarea.vue'
 import MarkdownRenderer from '@/components/markdown/MarkdownRenderer.vue'
 import TicketLabels from '@/components/tickets/TicketLabels.vue'
-import type { Comment, AuditLog, TicketStatus, Priority } from '@/types/ticket'
+import type { Comment, AuditLog, TicketStatus, Priority, GameContext } from '@/types/ticket'
 import { apiGetTemplates } from '@/api/tickets'
 import { diffLines } from 'diff'
 
@@ -218,6 +218,20 @@ watch(editBodyValue, (val) => {
 const ticket = computed(() => store.currentTicket)
 
 const ticketBody = computed(() => ticket.value ? renderTicketRefs(ticket.value.body) : '')
+
+const gameModeLabels: Record<string, string> = {
+  survival: '生存模式',
+  creative: '创造模式',
+  adventure: '冒险模式',
+  spectator: '观察模式',
+}
+
+const gameContext = computed<GameContext | null>(() => {
+  if (!ticket.value?.gameContext) return null
+  try {
+    return JSON.parse(ticket.value.gameContext) as GameContext
+  } catch { return null }
+})
 
 const auditLogs = ref<AuditLog[]>([])
 
@@ -795,6 +809,10 @@ function onBodyFilePaste(e: ClipboardEvent) {
             <span class="text-slate-500 dark:text-slate-400">优先级</span>
             <span class="text-slate-700 dark:text-slate-300">{{ priorityLabels[ticket.priority] }}</span>
           </div>
+          <div class="flex justify-between">
+            <span class="text-slate-500 dark:text-slate-400">来源</span>
+            <span class="text-slate-700 dark:text-slate-300">{{ ticket.server ? ticket.server.name : (ticket.serverId ? 'Minecraft Unknown' : '网页') }}</span>
+          </div>
           <div v-if="ticket.assignee" class="flex justify-between">
             <span class="text-slate-500 dark:text-slate-400">负责人</span>
             <span class="text-slate-700 dark:text-slate-300">{{ ticket.assignee.username }}</span>
@@ -802,6 +820,23 @@ function onBodyFilePaste(e: ClipboardEvent) {
           <div v-if="ticket.server" class="flex justify-between">
             <span class="text-slate-500 dark:text-slate-400">服务器</span>
             <span class="text-slate-700 dark:text-slate-300">{{ ticket.server.name }}</span>
+          </div>
+        </div>
+
+        <!-- 附加信息 (Game Context) -->
+        <div v-if="gameContext" class="px-6 py-5 rounded-xl border border-slate-200/80 dark:border-slate-800/80 bg-white/70 dark:bg-slate-900/70 backdrop-blur space-y-3 text-sm">
+          <h3 class="text-xs font-semibold tracking-[0.18em] uppercase text-slate-500 dark:text-slate-400">附加信息</h3>
+          <div v-if="gameContext.world" class="flex justify-between">
+            <span class="text-slate-500 dark:text-slate-400">世界</span>
+            <span class="text-slate-700 dark:text-slate-300">{{ gameContext.world }}</span>
+          </div>
+          <div v-if="gameContext.x !== undefined && gameContext.y !== undefined && gameContext.z !== undefined" class="flex justify-between">
+            <span class="text-slate-500 dark:text-slate-400">坐标</span>
+            <span class="text-slate-700 dark:text-slate-300">{{ gameContext.x }}, {{ gameContext.y }}, {{ gameContext.z }}</span>
+          </div>
+          <div v-if="gameContext.gameMode" class="flex justify-between">
+            <span class="text-slate-500 dark:text-slate-400">游戏模式</span>
+            <span class="text-slate-700 dark:text-slate-300">{{ gameModeLabels[gameContext.gameMode.toLowerCase()] || gameContext.gameMode }}</span>
           </div>
         </div>
 
