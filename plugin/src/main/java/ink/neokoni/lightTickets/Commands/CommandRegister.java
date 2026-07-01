@@ -1,12 +1,15 @@
 package ink.neokoni.lightTickets.Commands;
 
 import com.mojang.brigadier.Command;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import ink.neokoni.lightTickets.Commands.Functions.BindAccount;
 import ink.neokoni.lightTickets.Commands.Functions.CreateTicket;
 import ink.neokoni.lightTickets.Commands.Functions.RegisterAccount;
 import ink.neokoni.lightTickets.Commands.Functions.Reload;
+import ink.neokoni.lightTickets.Commands.Functions.TicketInfo;
+import ink.neokoni.lightTickets.Commands.Functions.TicketList;
 import ink.neokoni.lightTickets.LightTickets;
 import ink.neokoni.lightTickets.Utils.LangUtils;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
@@ -75,6 +78,37 @@ public class CommandRegister {
                                                 if (ctx.getSource().getSender() instanceof Player player) {
                                                     String type = StringArgumentType.getString(ctx, "type");
                                                     new CreateTicket(player, type);
+                                                }
+                                                return Command.SINGLE_SUCCESS;
+                                            })))
+                            .then(Commands.literal("list")
+                                    .requires(ctx -> ctx.getSender().hasPermission("lighttickets.ticket.list")
+                                            || ctx.getSender().hasPermission("lighttickets.player"))
+                                    .executes(ctx -> {
+                                        if (ctx.getSource().getSender() instanceof Player player) {
+                                            Bukkit.getAsyncScheduler().runNow(LightTickets.getInstance(),
+                                                    task -> new TicketList(player, 1));
+                                        }
+                                        return Command.SINGLE_SUCCESS;
+                                    })
+                                    .then(Commands.argument("page", IntegerArgumentType.integer(1))
+                                            .executes(ctx -> {
+                                                if (ctx.getSource().getSender() instanceof Player player) {
+                                                    int page = IntegerArgumentType.getInteger(ctx, "page");
+                                                    Bukkit.getAsyncScheduler().runNow(LightTickets.getInstance(),
+                                                            task -> new TicketList(player, page));
+                                                }
+                                                return Command.SINGLE_SUCCESS;
+                                            })))
+                            .then(Commands.literal("info")
+                                    .requires(ctx -> ctx.getSender().hasPermission("lighttickets.ticket.info")
+                                            || ctx.getSender().hasPermission("lighttickets.player"))
+                                    .then(Commands.argument("id", IntegerArgumentType.integer(1))
+                                            .executes(ctx -> {
+                                                if (ctx.getSource().getSender() instanceof Player player) {
+                                                    int id = IntegerArgumentType.getInteger(ctx, "id");
+                                                    Bukkit.getAsyncScheduler().runNow(LightTickets.getInstance(),
+                                                            task -> new TicketInfo(player, id));
                                                 }
                                                 return Command.SINGLE_SUCCESS;
                                             }))))

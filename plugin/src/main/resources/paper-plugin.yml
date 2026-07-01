@@ -27,6 +27,8 @@ permissions:
       - lighttickets.bind
       - lighttickets.register
       - lighttickets.ticket.create
+      - lighttickets.ticket.list
+      - lighttickets.ticket.info
   lighttickets.reload:
     description: "重载插件"
     default: op
@@ -38,4 +40,10 @@ permissions:
     default: true
   lighttickets.ticket.create:
     description: "创建议题"
+    default: true
+  lighttickets.ticket.list:
+    description: "查看议题列表"
+    default: true
+  lighttickets.ticket.info:
+    description: "查看议题详情"
     default: true

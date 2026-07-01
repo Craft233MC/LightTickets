@@ -114,7 +114,7 @@ describe('GET /api/mc/tickets/:uuid', () => {
       .set('X-Server-Key', server.apiKey);
 
     expect(res.status).toBe(200);
-    expect(res.body.length).toBeGreaterThanOrEqual(1);
+    expect(res.body.tickets.length).toBeGreaterThanOrEqual(1);
   });
 
   it('returns empty array for unknown uuid', async () => {
@@ -127,7 +127,7 @@ describe('GET /api/mc/tickets/:uuid', () => {
       .set('X-Server-Key', server.apiKey);
 
     expect(res.status).toBe(200);
-    expect(res.body).toEqual([]);
+    expect(res.body.tickets).toEqual([]);
   });
 });
 
