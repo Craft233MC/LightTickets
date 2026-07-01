@@ -32,4 +32,10 @@ public class ConfigUtils {
         Language.init();
         PlayerData.init();
     }
+
+    public static void reloadAllConfigs() {
+        Config.reload();
+        Language.reload();
+        PlayerData.reload();
+    }
 }

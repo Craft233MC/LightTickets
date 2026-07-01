@@ -21,6 +21,11 @@ public class Language {
         if (!ConfigUtils.isFileExist(defaultLangFile)) {
             LightTickets.getInstance().saveResource(langName, false);
         }
+        load();
+    }
+
+    public static void load() {
+        String langName = "lang.yml";
         YamlConfiguration user = YamlConfiguration.loadConfiguration(defaultLangFile.toFile());
         YamlConfiguration defaults = YamlConfiguration.loadConfiguration(
                 new InputStreamReader(
@@ -28,5 +33,15 @@ public class Language {
                         StandardCharsets.UTF_8));
         user.setDefaults(defaults);
         defaultLang = user;
+    }
+
+    public static void reload() {
+        if (defaultLangFile == null) {
+            defaultLangFile = ConfigUtils.getFilePath("lang.yml");
+        }
+        if (!ConfigUtils.isFileExist(defaultLangFile)) {
+            LightTickets.getInstance().saveResource("lang.yml", false);
+        }
+        load();
     }
 }

@@ -5,6 +5,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import ink.neokoni.lightTickets.Commands.Functions.BindAccount;
 import ink.neokoni.lightTickets.Commands.Functions.CreateTicket;
+import ink.neokoni.lightTickets.Commands.Functions.Reload;
 import ink.neokoni.lightTickets.LightTickets;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
@@ -50,7 +51,12 @@ public class CommandRegister {
                                                             task -> new CreateTicket(player, title, world, x, y, z, gameMode));
                                                 }
                                                 return Command.SINGLE_SUCCESS;
-                                            }))));
+                                            }))))
+                    .then(Commands.literal("reload")
+                            .executes(ctx -> {
+                                new Reload(ctx.getSource().getSender());
+                                return Command.SINGLE_SUCCESS;
+                            }));
         }
     }
 }

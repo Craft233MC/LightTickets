@@ -12,3 +12,5 @@ bind:
 ticket:
   title_prompt: "<color:#ffdbab>请通过命令提供议题标题, 用法: /lit ticket <标题>"
   created: "<color:#ffffff>议题已创建: <color:#96bfff>#{id} <gray>{title}"
+system:
+  reload_success: "<color:#96bfff>插件已重载"

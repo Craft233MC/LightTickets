@@ -25,6 +25,13 @@ public class PlayerData {
         cachedPlayerBind = new ConcurrentHashMap<>();
     }
 
+    public static void reload() {
+        if (sqlAdapter != null) {
+            sqlAdapter.close();
+        }
+        init();
+    }
+
     public static PlayerBind getPlayerBind(Player player, boolean cached, boolean create) {
         UUID uuid = player.getUniqueId();
         if (cached && cachedPlayerBind.containsKey(uuid) && cachedPlayerBind.get(uuid) != null) {
