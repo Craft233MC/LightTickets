@@ -26,6 +26,7 @@ permissions:
     children:
       - lighttickets.bind
       - lighttickets.register
+      - lighttickets.account
       - lighttickets.ticket.create
       - lighttickets.ticket.list
       - lighttickets.ticket.info
@@ -37,6 +38,9 @@ permissions:
     default: true
   lighttickets.register:
     description: "通过 Minecraft 注册 LightTickets 账号"
+    default: true
+  lighttickets.account:
+    description: "查看账号绑定信息"
     default: true
   lighttickets.ticket.create:
     description: "创建议题"

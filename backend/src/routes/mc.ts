@@ -116,6 +116,25 @@ router.get('/tickets/:uuid', async (req: Request, res: Response) => {
   res.json(result);
 });
 
+router.get('/user/:uuid', async (req: Request, res: Response) => {
+  const user = await prisma().user.findUnique({
+    where: { minecraftUuid: req.params.uuid },
+    select: {
+      id: true,
+      email: true,
+      username: true,
+      minecraftUuid: true,
+      minecraftName: true,
+      avatarUrl: true,
+      role: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+  if (!user) throw new NotFoundError('Player not linked');
+  res.json(user);
+});
+
 router.post('/comments', async (req: Request, res: Response) => {
   const { minecraftUuid, ticketId, body } = req.body;
   if (!minecraftUuid || !ticketId || !body) throw new ValidationError('minecraftUuid, ticketId, and body required');

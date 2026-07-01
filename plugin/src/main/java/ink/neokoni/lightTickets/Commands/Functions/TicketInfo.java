@@ -110,24 +110,21 @@ public class TicketInfo {
     }
 
     private String statusLabel(String status) {
-        return switch (status) {
-            case "open" -> "开放";
-            case "in_progress" -> "处理中";
-            case "resolved" -> "已解决";
-            case "closed" -> "无效";
-            case "rejected" -> "已拒绝";
-            default -> status;
-        };
+        String key = "ticket.status_" + status;
+        String label = LangUtils.getRawLang(key);
+        if (label.isEmpty()) {
+            return LangUtils.getRawLang("ticket.status_open");
+        }
+        return label;
     }
 
     private String priorityLabel(String priority) {
-        return switch (priority) {
-            case "low" -> "低";
-            case "medium" -> "中";
-            case "high" -> "高";
-            case "critical" -> "紧急";
-            default -> priority;
-        };
+        String key = "ticket.priority_" + priority;
+        String label = LangUtils.getRawLang(key);
+        if (label.isEmpty()) {
+            return LangUtils.getRawLang("ticket.priority_medium");
+        }
+        return label;
     }
 
     private String formatDate(String iso) {

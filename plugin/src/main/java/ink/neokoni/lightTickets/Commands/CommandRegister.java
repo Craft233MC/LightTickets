@@ -4,6 +4,7 @@ import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import ink.neokoni.lightTickets.Commands.Functions.AccountInfo;
 import ink.neokoni.lightTickets.Commands.Functions.BindAccount;
 import ink.neokoni.lightTickets.Commands.Functions.CreateTicket;
 import ink.neokoni.lightTickets.Commands.Functions.RegisterAccount;
@@ -40,6 +41,16 @@ public class CommandRegister {
                                 if (ctx.getSource().getSender() instanceof Player player) {
                                     Bukkit.getAsyncScheduler().runNow(LightTickets.getInstance(),
                                             task -> new BindAccount(player));
+                                }
+                                return Command.SINGLE_SUCCESS;
+                            }))
+                    .then(Commands.literal("account")
+                            .requires(ctx -> ctx.getSender().hasPermission("lighttickets.account")
+                                    || ctx.getSender().hasPermission("lighttickets.player"))
+                            .executes(ctx -> {
+                                if (ctx.getSource().getSender() instanceof Player player) {
+                                    Bukkit.getAsyncScheduler().runNow(LightTickets.getInstance(),
+                                            task -> new AccountInfo(player));
                                 }
                                 return Command.SINGLE_SUCCESS;
                             }))

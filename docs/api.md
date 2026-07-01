@@ -742,7 +742,6 @@ X-Server-Key: server-api-key
 
 **查询参数:**
 - `page`: 页码 (默认1)
-- `pageSize`: 每页数量 (默认10)
 
 **响应 (200):**
 ```json
@@ -768,6 +767,31 @@ X-Server-Key: server-api-key
   "total": 100,
   "page": 1,
   "pageSize": 10
+}
+```
+
+### 获取Minecraft玩家绑定信息
+> `GET /api/mc/user/:uuid`
+
+需要服务器API密钥
+
+**请求头:**
+```
+X-Server-Key: server-api-key
+```
+
+**响应 (200):**
+```json
+{
+  "id": 1,
+  "email": "player@example.com",
+  "username": "playername",
+  "minecraftUuid": "minecraft-uuid",
+  "minecraftName": "MinecraftName",
+  "avatarUrl": null,
+  "role": "player",
+  "createdAt": "2024-01-01T00:00:00.000Z",
+  "updatedAt": "2024-01-01T00:00:00.000Z"
 }
 ```
 
